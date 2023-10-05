@@ -9,48 +9,37 @@ using namespace std;
 
 class Sigmoid : public ActivationFunction {
 public:
-  virtual TFloat apply(TFloat parameter) const override {
-    return 1.0 / (1.0 + exp(-parameter));
-  }
-
-  virtual TFloat derivative(TFloat parameter) const override {
-    TFloat sigmoid = this->apply(parameter);
-
-    return sigmoid * (1.0 - sigmoid);
+  virtual Expression apply(Expression x) const override {
+    return 1.0_expr / (1.0_expr + exp(M_E, -x));
   }
 };
 
 class MeanSquaredError : public ErrorFunction {
-  virtual TFloat apply(const Matrix &got,
-                       const Matrix &expected) const override {
+  virtual Expression apply(const Matrix<Expression> &got,
+                           const Matrix<Expression> &expected) const override {
     if (got.rows() != expected.rows() || got.cols() != expected.cols())
       throw exception();
 
-    TFloat sum = 0.0;
+    Expression sum = pow(got.data[0] - expected.data[0], 2);
 
-    for (size_t i = 0; i != got.data.size(); i++) {
-      sum += pow(got.data[i] - expected.data[i], 2);
+    for (size_t i = 1; i != got.data.size(); i++) {
+      sum = sum + pow(got.data[i] - expected.data[i], 2);
     }
 
-    return sum * 2.0 / got.data.size();
-  }
-
-  virtual Matrix derivative(const Matrix &got,
-                            const Matrix &expected) const override {
-    return got - expected;
+    return sum * 2.0_expr / make_shared<ValueExpression>(got.data.size());
   }
 };
 
-vector<pair<Matrix, Matrix>>
+vector<pair<Matrix<TFloat>, Matrix<TFloat>>>
 make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
-  vector<pair<Matrix, Matrix>> result;
+  vector<pair<Matrix<TFloat>, Matrix<TFloat>>> result;
 
   for (size_t i = 0; i != dataset.size(); i++) {
-    Matrix inputs(1, dataset[i].first.size());
+    Matrix<TFloat> inputs(dataset[i].first.size(), 1);
 
     inputs.data = dataset[i].first;
 
-    Matrix outputs(1, 1);
+    Matrix<TFloat> outputs(1, 1);
 
     outputs(0, 0) = dataset[i].second;
 
@@ -61,13 +50,14 @@ make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
 }
 
 int main() {
-  NeuralNetwork neural_network(2, 3, 1, make_unique<Sigmoid>(),
-                               make_unique<MeanSquaredError>());
+  NeuralNetwork neural_network(2, 3, 1, Sigmoid(), MeanSquaredError());
 
-  vector<pair<Matrix, Matrix>> dataset =
+  vector<pair<Matrix<TFloat>, Matrix<TFloat>>> dataset =
       make_dataset({{{1, 1}, 0}, {{1, 0}, 1}, {{0, 1}, 1}, {{0, 0}, 0}});
 
   for (size_t epoch = 0; epoch != 1000; epoch++) {
+    cout << epoch << endl;
+
     for (size_t i = 0; i != dataset.size(); i++) {
       neural_network.forward(dataset[i].first);
       neural_network.backward(dataset[i].second, 0.1);
@@ -75,10 +65,10 @@ int main() {
   }
 
   while (true) {
-    Matrix matrix(1, 2);
+    Matrix<TFloat> inputs(2, 1);
 
-    cin >> matrix(0, 0) >> matrix(0, 1);
+    cin >> inputs(0, 0) >> inputs(1, 0);
 
-    cout << neural_network.forward(matrix)(0, 0) << endl;
+    cout << neural_network.forward(inputs)(0, 0) << endl;
   }
 }

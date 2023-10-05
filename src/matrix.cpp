@@ -1,37 +1,42 @@
 #include <iostream>
 #include <random>
 
+#include "autograd/autograd.hpp"
 #include "matrix.hpp"
 
 using namespace std;
 
-Matrix::Matrix() : _rows(0), _cols(0) {}
+template <typename TElement> Matrix<TElement>::Matrix() : _rows(0), _cols(0) {}
 
-Matrix::Matrix(size_t rows, size_t cols)
+template <typename TElement>
+Matrix<TElement>::Matrix(size_t rows, size_t cols)
     : _rows(rows), _cols(cols), data(rows * cols) {}
 
-size_t Matrix::rows() const { return this->_rows; }
-size_t Matrix::cols() const { return this->_cols; }
+template <typename TElement>
+template <typename InputIt>
+Matrix<TElement>::Matrix(size_t rows, size_t cols, InputIt first, InputIt last)
+    : _rows(rows), _cols(cols), data(vector<TElement>(first, last)) {}
 
-void Matrix::randomize(TFloat min, TFloat max) {
-  random_device rd;
-  uniform_real_distribution<TFloat> distribution(min, max);
-
-  for (size_t i = 0; i != this->data.size(); i++) {
-    this->data[i] = distribution(rd);
-  }
+template <typename TElement> size_t Matrix<TElement>::rows() const {
+  return this->_rows;
+}
+template <typename TElement> size_t Matrix<TElement>::cols() const {
+  return this->_cols;
 }
 
-TFloat &Matrix::operator()(size_t i, size_t j) {
+template <typename TElement>
+TElement &Matrix<TElement>::operator()(size_t i, size_t j) {
   return this->data.at(i * this->_cols + j);
 }
 
-const TFloat &Matrix::operator()(size_t i, size_t j) const {
+template <typename TElement>
+const TElement &Matrix<TElement>::operator()(size_t i, size_t j) const {
   return this->data.at(i * this->_cols + j);
 }
 
-Matrix Matrix::transpose() const {
-  Matrix result(this->_cols, this->_rows);
+template <typename TElement>
+Matrix<TElement> Matrix<TElement>::transpose() const {
+  Matrix<TElement> result(this->_cols, this->_rows);
 
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != this->_cols; j++) {
@@ -42,18 +47,19 @@ Matrix Matrix::transpose() const {
   return result;
 }
 
-Matrix Matrix::dot(const Matrix &other) const {
+template <typename TElement>
+Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
   if (this->_cols != other._rows)
     throw exception();
 
-  Matrix result(this->_rows, other._cols);
+  Matrix<TElement> result(this->_rows, other._cols);
 
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != other._cols; j++) {
-      result(i, j) = 0.0;
+      result(i, j) = (*this)(i, 0) * other(0, j);
 
-      for (size_t k = 0; k != this->_cols; k++) {
-        result(i, j) += (*this)(i, k) * other(k, j);
+      for (size_t k = 1; k != this->_cols; k++) {
+        result(i, j) = result(i, j) + (*this)(i, k) * other(k, j);
       }
     }
   }
@@ -61,8 +67,9 @@ Matrix Matrix::dot(const Matrix &other) const {
   return result;
 }
 
-Matrix Matrix::operator*(TFloat factor) const {
-  Matrix result(this->_rows, this->_cols);
+template <typename TElement>
+Matrix<TElement> Matrix<TElement>::operator*(TElement factor) const {
+  Matrix<TElement> result(this->_rows, this->_cols);
 
   for (size_t i = 0; i != this->data.size(); i++) {
     result.data[i] = this->data[i] * factor;
@@ -71,11 +78,13 @@ Matrix Matrix::operator*(TFloat factor) const {
   return result;
 }
 
-Matrix Matrix::operator+(const Matrix &other) const {
+template <typename TElement>
+Matrix<TElement>
+Matrix<TElement>::operator+(const Matrix<TElement> &other) const {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  Matrix result(this->_rows, this->_cols);
+  Matrix<TElement> result(this->_rows, this->_cols);
 
   for (size_t i = 0; i != this->data.size(); i++) {
     result.data[i] = this->data[i] + other.data[i];
@@ -84,11 +93,13 @@ Matrix Matrix::operator+(const Matrix &other) const {
   return result;
 }
 
-Matrix Matrix::operator-(const Matrix &other) const {
+template <typename TElement>
+Matrix<TElement>
+Matrix<TElement>::operator-(const Matrix<TElement> &other) const {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  Matrix result(this->_rows, this->_cols);
+  Matrix<TElement> result(this->_rows, this->_cols);
 
   for (size_t i = 0; i != this->data.size(); i++) {
     result.data[i] = this->data[i] - other.data[i];
@@ -97,11 +108,13 @@ Matrix Matrix::operator-(const Matrix &other) const {
   return result;
 }
 
-Matrix Matrix::operator*(const Matrix &other) const {
+template <typename TElement>
+Matrix<TElement>
+Matrix<TElement>::operator*(const Matrix<TElement> &other) const {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  Matrix result(this->_rows, this->_cols);
+  Matrix<TElement> result(this->_rows, this->_cols);
 
   for (size_t i = 0; i != this->data.size(); i++) {
     result.data[i] = this->data[i] * other.data[i];
@@ -109,3 +122,6 @@ Matrix Matrix::operator*(const Matrix &other) const {
 
   return result;
 }
+
+template class Matrix<Expression>;
+template class Matrix<TFloat>;

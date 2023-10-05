@@ -4,3 +4,5 @@ sources += files(
   'neural_network.cpp',
   'activation_function.cpp'
 )
+
+subdir('autograd')

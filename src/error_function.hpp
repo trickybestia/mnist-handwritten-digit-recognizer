@@ -4,8 +4,6 @@
 
 class ErrorFunction {
 public:
-  virtual TFloat apply(const Matrix &got, const Matrix &expected) const = 0;
-
-  virtual Matrix derivative(const Matrix &got,
-                            const Matrix &expected) const = 0;
+  virtual Expression apply(const Matrix<Expression> &got,
+                           const Matrix<Expression> &expected) const = 0;
 };

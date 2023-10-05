@@ -1,20 +1,11 @@
 #include "activation_function.hpp"
 
-Matrix ActivationFunction::apply(const Matrix &parameters) const {
-  Matrix result(parameters.rows(), parameters.cols());
+Matrix<Expression>
+ActivationFunction::apply(const Matrix<Expression> &X) const {
+  Matrix<Expression> result(X.rows(), X.cols());
 
   for (size_t i = 0; i != result.data.size(); i++) {
-    result.data[i] = this->apply(parameters.data[i]);
-  }
-
-  return result;
-}
-
-Matrix ActivationFunction::derivative(const Matrix &parameters) const {
-  Matrix result(parameters.rows(), parameters.cols());
-
-  for (size_t i = 0; i != result.data.size(); i++) {
-    result.data[i] = this->derivative(parameters.data[i]);
+    result.data[i] = this->apply(X.data[i]);
   }
 
   return result;

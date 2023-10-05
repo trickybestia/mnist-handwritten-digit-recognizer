@@ -4,55 +4,102 @@
 
 using namespace std;
 
+const TFloat RANDOM_PARAMETER_MIN = -2.0;
+const TFloat RANDOM_PARAMETER_MAX = 2.0;
+
+Matrix<Expression> randomize_value_expression_matrix(size_t rows, size_t cols) {
+  random_device rd;
+  uniform_real_distribution<TFloat> distribution(RANDOM_PARAMETER_MIN,
+                                                 RANDOM_PARAMETER_MAX);
+
+  Matrix<Expression> result(rows, cols);
+
+  for (size_t i = 0; i != result.data.size(); i++)
+    result.data[i] = make_shared<ValueExpression>(distribution(rd));
+
+  return result;
+}
+
+Matrix<Expression> create_value_expression_matrix(size_t rows, size_t cols) {
+  Matrix<Expression> result(rows, cols);
+
+  for (size_t i = 0; i != result.data.size(); i++)
+    result.data[i] = 0.0_expr;
+
+  return result;
+}
+
+Matrix<TFloat> grad(Expression value, Matrix<Expression> &X) {
+  Matrix<TFloat> result(X.rows(), X.cols());
+
+  for (size_t i = 0; i != X.data.size(); i++)
+    result.data[i] = value->derivative(X.data[i])->value();
+
+  return result;
+}
+
+void update_value_expression_matrix(Matrix<Expression> &m, Matrix<TFloat> grad,
+                                    TFloat learning_rate) {
+  if (m.rows() != grad.rows() || m.cols() != grad.cols())
+    throw exception();
+
+  for (size_t i = 0; i != m.data.size(); i++)
+    dynamic_pointer_cast<ValueExpression>(m.data[i])->set_value(
+        m.data[i]->value() - grad.data[i] * learning_rate);
+}
+
+void load_values_in_value_expression_matrix(Matrix<Expression> &m,
+                                            const Matrix<TFloat> &values) {
+  if (m.rows() != values.rows() || m.cols() != values.cols())
+    throw exception();
+
+  for (size_t i = 0; i != m.data.size(); i++)
+    dynamic_pointer_cast<ValueExpression>(m.data[i])->set_value(values.data[i]);
+}
+
 NeuralNetwork::NeuralNetwork(size_t inputs_count, size_t hidden_layer_size,
                              size_t outputs_count,
-                             unique_ptr<ActivationFunction> activation_function,
-                             unique_ptr<ErrorFunction> error_function)
-    : W1(inputs_count, hidden_layer_size), W2(hidden_layer_size, outputs_count),
-      B1(1, hidden_layer_size), B2(1, outputs_count),
-      activation_function(std::move(activation_function)),
-      error_function(std::move(error_function)), inputs_count(inputs_count),
-      hidden_layer_size(hidden_layer_size), outputs_count(outputs_count) {
-  this->randomize();
+                             const ActivationFunction &activation_function,
+                             const ErrorFunction &error_function)
+    : W1(randomize_value_expression_matrix(hidden_layer_size, inputs_count)),
+      W2(randomize_value_expression_matrix(outputs_count, hidden_layer_size)),
+      B1(randomize_value_expression_matrix(hidden_layer_size, 1)),
+      B2(randomize_value_expression_matrix(outputs_count, 1)),
+      input(create_value_expression_matrix(inputs_count, 1)),
+      expected_output(create_value_expression_matrix(outputs_count, 1)),
+      inputs_count(inputs_count), hidden_layer_size(hidden_layer_size),
+      outputs_count(outputs_count) {
+  Matrix<Expression> Z1 = this->W1.dot(this->input) + this->B1;
+  Matrix<Expression> A1 = activation_function.apply(Z1);
+  Matrix<Expression> Z2 = this->W2.dot(A1) + this->B2;
+
+  this->output = std::move(Z2);
+  this->error = error_function.apply(this->output, this->expected_output);
 }
 
-void NeuralNetwork::randomize() {
-  const TFloat MIN = -2.0;
-  const TFloat MAX = 2.0;
+Matrix<TFloat> NeuralNetwork::forward(const Matrix<TFloat> &input) {
+  load_values_in_value_expression_matrix(this->input, input);
 
-  this->W1.randomize(MIN, MAX);
-  this->W2.randomize(MIN, MAX);
+  Matrix<TFloat> result(this->outputs_count, 1);
 
-  this->B1.randomize(MIN, MAX);
-  this->B2.randomize(MIN, MAX);
+  for (size_t i = 0; i != this->outputs_count; i++)
+    result.data[i] = this->output.data[i]->value();
+
+  return result;
 }
 
-const Matrix &NeuralNetwork::forward(const Matrix &input) {
-  this->A0 = input;
-
-  this->Z1 = this->A0.dot(this->W1) + this->B1;
-  this->A1 = this->activation_function->apply(this->Z1);
-  this->Z2 = this->A1.dot(this->W2) + this->B2;
-
-  return this->Z2;
-}
-
-void NeuralNetwork::backward(const Matrix &expected_output,
+void NeuralNetwork::backward(const Matrix<TFloat> &expected_output,
                              TFloat learning_rate) {
-  Matrix output_layer_error =
-      this->error_function->derivative(this->Z2, expected_output);
-  Matrix hidden_layer_error = output_layer_error.dot(this->W2.transpose()) *
-                              this->activation_function->derivative(this->Z1);
+  load_values_in_value_expression_matrix(this->expected_output,
+                                         expected_output);
 
-  Matrix grad_W2 = this->A1.transpose().dot(output_layer_error);
-  Matrix grad_W1 = this->A0.transpose().dot(hidden_layer_error);
+  Matrix<TFloat> grad_W1 = grad(this->error, this->W1),
+                 grad_W2 = grad(this->error, this->W2),
+                 grad_B1 = grad(this->error, this->B1),
+                 grad_B2 = grad(this->error, this->B2);
 
-  this->W1 = this->W1 - grad_W1 * learning_rate;
-  this->W2 = this->W2 - grad_W2 * learning_rate;
-
-  Matrix &grad_B1 = hidden_layer_error;
-  Matrix &grad_B2 = output_layer_error;
-
-  this->B1 = this->B1 - grad_B1 * learning_rate;
-  this->B2 = this->B2 - grad_B2 * learning_rate;
+  update_value_expression_matrix(this->W1, grad_W1, learning_rate);
+  update_value_expression_matrix(this->W2, grad_W2, learning_rate);
+  update_value_expression_matrix(this->B1, grad_B1, learning_rate);
+  update_value_expression_matrix(this->B2, grad_B2, learning_rate);
 }
