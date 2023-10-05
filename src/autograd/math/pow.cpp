@@ -14,8 +14,8 @@ protected:
     return std::pow(this->base->value(), this->power);
   }
 
-  virtual Expression compute_derivative(Expression wrt) override {
-    return make_shared<ValueExpression>(this->power) *
+  virtual Expression compute_derivative(Variable wrt) override {
+    return make_shared<ConstExpression>(this->power) *
            pow(this->base, this->power - 1.0) * this->base->derivative(wrt);
   }
 

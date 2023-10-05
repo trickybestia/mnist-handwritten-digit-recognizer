@@ -14,7 +14,7 @@ protected:
     return std::log(this->x->value()) / ::log(this->base);
   }
 
-  virtual Expression compute_derivative(Expression wrt) override {
+  virtual Expression compute_derivative(Variable wrt) override {
     return this->x->derivative(wrt) / (this->x * log(this->base, this->x));
   }
 

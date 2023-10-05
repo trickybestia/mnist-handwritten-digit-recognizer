@@ -11,7 +11,7 @@ protected:
     return this->left->value() - this->right->value();
   }
 
-  virtual Expression compute_derivative(Expression wrt) override {
+  virtual Expression compute_derivative(Variable wrt) override {
     return this->left->derivative(wrt) - this->right->derivative(wrt);
   }
 

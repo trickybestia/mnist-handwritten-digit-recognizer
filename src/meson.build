@@ -5,4 +5,6 @@ sources += files(
   'activation_function.cpp'
 )
 
+subdir('activation_functions')
 subdir('autograd')
+subdir('error_functions')

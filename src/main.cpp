@@ -1,34 +1,14 @@
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <vector>
 
+#include "activation_functions/sigmoid.hpp"
+#include "error_functions/mean_squared_error.hpp"
 #include "neural_network.hpp"
 
 using namespace std;
-
-class Sigmoid : public ActivationFunction {
-public:
-  virtual Expression apply(Expression x) const override {
-    return 1.0_expr / (1.0_expr + exp(M_E, -x));
-  }
-};
-
-class MeanSquaredError : public ErrorFunction {
-  virtual Expression apply(const Matrix<Expression> &got,
-                           const Matrix<Expression> &expected) const override {
-    if (got.rows() != expected.rows() || got.cols() != expected.cols())
-      throw exception();
-
-    Expression sum = pow(got.data[0] - expected.data[0], 2);
-
-    for (size_t i = 1; i != got.data.size(); i++) {
-      sum = sum + pow(got.data[i] - expected.data[i], 2);
-    }
-
-    return sum * 2.0_expr / make_shared<ValueExpression>(got.data.size());
-  }
-};
 
 vector<pair<Matrix<TFloat>, Matrix<TFloat>>>
 make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
@@ -64,11 +44,10 @@ int main() {
     }
   }
 
-  while (true) {
-    Matrix<TFloat> inputs(2, 1);
+  Matrix<TFloat> inputs(2, 1);
 
-    cin >> inputs(0, 0) >> inputs(1, 0);
-
-    cout << neural_network.forward(inputs)(0, 0) << endl;
+  while (cin >> inputs(0, 0) >> inputs(1, 0)) {
+    cout << fixed << setprecision(numeric_limits<TFloat>::digits10 + 1)
+         << neural_network.forward(inputs)(0, 0) << endl;
   }
 }

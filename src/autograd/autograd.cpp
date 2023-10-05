@@ -1,10 +1,11 @@
-#include "autograd.hpp"
 #include <cmath>
+
+#include "autograd.hpp"
 
 using namespace std;
 
-shared_ptr<ValueExpression> operator""_expr(long double value) {
-  return make_shared<ValueExpression>(value);
+shared_ptr<ConstExpression> operator""_expr(long double value) {
+  return make_shared<ConstExpression>(value);
 }
 
 void ExpressionBase::reset_cache() {
@@ -28,7 +29,7 @@ TFloat ExpressionBase::value() {
   return *this->_value;
 }
 
-Expression ExpressionBase::derivative(Expression wrt) {
+Expression ExpressionBase::derivative(Variable wrt) {
   if (!this->derivatives.contains(wrt))
     this->derivatives[wrt] = this->compute_derivative(wrt);
 
@@ -43,17 +44,23 @@ Expression ExpressionBase::with_dependency(
   return expression;
 }
 
-ValueExpression::ValueExpression(TFloat value) : _value(value) {}
+ConstExpression::ConstExpression(TFloat value) : _value(value) {}
 
-void ValueExpression::set_value(TFloat value) {
+TFloat ConstExpression::compute_value() { return this->_value; }
+
+Expression ConstExpression::compute_derivative(Variable) { return 0.0_expr; }
+
+VariableExpression::VariableExpression(TFloat value) : _value(value) {}
+
+void VariableExpression::set_value(TFloat value) {
   this->_value = value;
 
   this->reset_cache();
 }
 
-TFloat ValueExpression::compute_value() { return this->_value; }
+TFloat VariableExpression::compute_value() { return this->_value; }
 
-Expression ValueExpression::compute_derivative(Expression wrt) {
+Expression VariableExpression::compute_derivative(Variable wrt) {
   if (wrt.get() == this)
     return 1.0_expr;
 

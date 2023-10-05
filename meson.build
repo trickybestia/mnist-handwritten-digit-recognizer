@@ -4,7 +4,7 @@ project(
   default_options: [
     'cpp_std=c++20',
     'optimization=3',
-    # 'b_sanitize=address,undefined',
+    #'b_sanitize=address,undefined',
     'warning_level=2'
   ]
 )

@@ -7,7 +7,7 @@ using namespace std;
 const TFloat RANDOM_PARAMETER_MIN = -2.0;
 const TFloat RANDOM_PARAMETER_MAX = 2.0;
 
-Matrix<Expression> randomize_value_expression_matrix(size_t rows, size_t cols) {
+Matrix<Expression> randomize_variable_matrix(size_t rows, size_t cols) {
   random_device rd;
   uniform_real_distribution<TFloat> distribution(RANDOM_PARAMETER_MIN,
                                                  RANDOM_PARAMETER_MAX);
@@ -15,16 +15,16 @@ Matrix<Expression> randomize_value_expression_matrix(size_t rows, size_t cols) {
   Matrix<Expression> result(rows, cols);
 
   for (size_t i = 0; i != result.data.size(); i++)
-    result.data[i] = make_shared<ValueExpression>(distribution(rd));
+    result.data[i] = make_shared<VariableExpression>(distribution(rd));
 
   return result;
 }
 
-Matrix<Expression> create_value_expression_matrix(size_t rows, size_t cols) {
+Matrix<Expression> create_variable_matrix(size_t rows, size_t cols) {
   Matrix<Expression> result(rows, cols);
 
   for (size_t i = 0; i != result.data.size(); i++)
-    result.data[i] = 0.0_expr;
+    result.data[i] = make_shared<VariableExpression>(0.0);
 
   return result;
 }
@@ -33,7 +33,9 @@ Matrix<TFloat> grad(Expression value, Matrix<Expression> &X) {
   Matrix<TFloat> result(X.rows(), X.cols());
 
   for (size_t i = 0; i != X.data.size(); i++)
-    result.data[i] = value->derivative(X.data[i])->value();
+    result.data[i] =
+        value->derivative(dynamic_pointer_cast<VariableExpression>(X.data[i]))
+            ->value();
 
   return result;
 }
@@ -44,7 +46,7 @@ void update_value_expression_matrix(Matrix<Expression> &m, Matrix<TFloat> grad,
     throw exception();
 
   for (size_t i = 0; i != m.data.size(); i++)
-    dynamic_pointer_cast<ValueExpression>(m.data[i])->set_value(
+    dynamic_pointer_cast<VariableExpression>(m.data[i])->set_value(
         m.data[i]->value() - grad.data[i] * learning_rate);
 }
 
@@ -54,19 +56,20 @@ void load_values_in_value_expression_matrix(Matrix<Expression> &m,
     throw exception();
 
   for (size_t i = 0; i != m.data.size(); i++)
-    dynamic_pointer_cast<ValueExpression>(m.data[i])->set_value(values.data[i]);
+    dynamic_pointer_cast<VariableExpression>(m.data[i])->set_value(
+        values.data[i]);
 }
 
 NeuralNetwork::NeuralNetwork(size_t inputs_count, size_t hidden_layer_size,
                              size_t outputs_count,
                              const ActivationFunction &activation_function,
                              const ErrorFunction &error_function)
-    : W1(randomize_value_expression_matrix(hidden_layer_size, inputs_count)),
-      W2(randomize_value_expression_matrix(outputs_count, hidden_layer_size)),
-      B1(randomize_value_expression_matrix(hidden_layer_size, 1)),
-      B2(randomize_value_expression_matrix(outputs_count, 1)),
-      input(create_value_expression_matrix(inputs_count, 1)),
-      expected_output(create_value_expression_matrix(outputs_count, 1)),
+    : W1(randomize_variable_matrix(hidden_layer_size, inputs_count)),
+      W2(randomize_variable_matrix(outputs_count, hidden_layer_size)),
+      B1(randomize_variable_matrix(hidden_layer_size, 1)),
+      B2(randomize_variable_matrix(outputs_count, 1)),
+      input(create_variable_matrix(inputs_count, 1)),
+      expected_output(create_variable_matrix(outputs_count, 1)),
       inputs_count(inputs_count), hidden_layer_size(hidden_layer_size),
       outputs_count(outputs_count) {
   Matrix<Expression> Z1 = this->W1.dot(this->input) + this->B1;
