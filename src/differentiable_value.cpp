@@ -52,10 +52,9 @@ DifferentiableValue::DifferentiableValue(TFloat value) : _value(value) {}
 DifferentiableValue::DifferentiableValue(TFloat value, VariableId variable)
     : partial_derivatives({{variable, 1.0}}), _value(value) {}
 
-std::unordered_set<VariableId>
-DifferentiableValue::union_partial_derivatives_keys(
+std::set<VariableId> DifferentiableValue::union_partial_derivatives_keys(
     const DifferentiableValue &other) {
-  unordered_set<VariableId> result;
+  set<VariableId> result;
 
   for (auto [varaible_id, _] : this->partial_derivatives) {
     result.insert(varaible_id);

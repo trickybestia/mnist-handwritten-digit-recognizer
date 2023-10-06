@@ -1,18 +1,18 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 
 typedef double TFloat;
 typedef uint32_t VariableId;
 
 class DifferentiableValue {
 private:
-  std::unordered_map<VariableId, TFloat> partial_derivatives;
+  std::map<VariableId, TFloat> partial_derivatives;
   TFloat _value;
 
-  std::unordered_set<VariableId>
+  std::set<VariableId>
   union_partial_derivatives_keys(const DifferentiableValue &other);
 
 public:
