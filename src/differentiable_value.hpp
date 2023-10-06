@@ -1,19 +1,17 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <set>
+#include <vector>
 
-typedef double TFloat;
+typedef float TFloat;
 typedef uint32_t VariableId;
 
 class DifferentiableValue {
 private:
-  std::map<VariableId, TFloat> partial_derivatives;
+  std::vector<TFloat> derivatives;
   TFloat _value;
 
-  std::set<VariableId>
-  union_partial_derivatives_keys(const DifferentiableValue &other);
+  void align_size(const DifferentiableValue &other);
 
 public:
   DifferentiableValue();

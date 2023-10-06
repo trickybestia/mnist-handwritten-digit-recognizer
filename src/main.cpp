@@ -1,10 +1,10 @@
-#include <algorithm>
 #include <cmath>
 #include <format>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 
+#include "activation_functions/leaky_relu.hpp"
 #include "activation_functions/sigmoid.hpp"
 #include "activation_functions/tanh.hpp"
 #include "error_functions/mean_squared_error.hpp"
@@ -34,7 +34,7 @@ make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
 }
 
 int main() {
-  NeuralNetwork neural_network(2, 3, 1, make_unique<Tanh>(),
+  NeuralNetwork neural_network(2, 3, 1, make_unique<LeakyReLU>(0.01),
                                make_unique<MeanSquaredError>());
 
   vector<pair<Matrix<TFloat>, Matrix<TFloat>>> dataset =

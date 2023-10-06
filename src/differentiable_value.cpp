@@ -15,10 +15,8 @@ DifferentiableValue pow(const DifferentiableValue &x, TFloat power) {
 
   result._value = pow(result._value, power);
 
-  for (auto i = result.partial_derivatives.begin();
-       i != result.partial_derivatives.end(); i++) {
-    i->second *= derivative;
-  }
+  for (size_t i = 0; i != result.derivatives.size(); i++)
+    result.derivatives[i] *= derivative;
 
   return result;
 }
@@ -30,10 +28,8 @@ DifferentiableValue pow(TFloat base, const DifferentiableValue &power) {
 
   TFloat derivative = result._value * log(base);
 
-  for (auto i = result.partial_derivatives.begin();
-       i != result.partial_derivatives.end(); i++) {
-    i->second *= derivative;
-  }
+  for (size_t i = 0; i != result.derivatives.size(); i++)
+    result.derivatives[i] *= derivative;
 
   return result;
 }
@@ -50,31 +46,20 @@ DifferentiableValue::DifferentiableValue() {}
 DifferentiableValue::DifferentiableValue(TFloat value) : _value(value) {}
 
 DifferentiableValue::DifferentiableValue(TFloat value, VariableId variable)
-    : partial_derivatives({{variable, 1.0}}), _value(value) {}
+    : derivatives(variable + 1), _value(value) {
+  this->derivatives[variable] = 1.0;
+}
 
-std::set<VariableId> DifferentiableValue::union_partial_derivatives_keys(
-    const DifferentiableValue &other) {
-  set<VariableId> result;
-
-  for (auto [varaible_id, _] : this->partial_derivatives) {
-    result.insert(varaible_id);
-  }
-
-  for (auto [varaible_id, _] : other.partial_derivatives) {
-    result.insert(varaible_id);
-  }
-
-  return result;
+void DifferentiableValue::align_size(const DifferentiableValue &other) {
+  if (other.derivatives.size() > this->derivatives.size())
+    this->derivatives.resize(other.derivatives.size());
 }
 
 TFloat DifferentiableValue::derivative(VariableId wrt) const {
-  auto i = this->partial_derivatives.find(wrt);
+  if (wrt >= this->derivatives.size())
+    return 0.0;
 
-  if (i != this->partial_derivatives.end()) {
-    return i->second;
-  }
-
-  return 0.0;
+  return this->derivatives[wrt];
 }
 
 DifferentiableValue DifferentiableValue::operator-() const {
@@ -82,53 +67,49 @@ DifferentiableValue DifferentiableValue::operator-() const {
 
   result._value = -result._value;
 
-  for (auto i = result.partial_derivatives.begin();
-       i != result.partial_derivatives.end(); i++) {
-    i->second = -i->second;
-  }
+  for (size_t i = 0; i != result.derivatives.size(); i++)
+    result.derivatives[i] = -result.derivatives[i];
 
   return result;
 }
 
 void DifferentiableValue::operator+=(const DifferentiableValue &other) {
+  this->align_size(other);
+
   this->_value += other._value;
 
-  for (auto i = other.partial_derivatives.begin();
-       i != other.partial_derivatives.end(); i++) {
-    this->partial_derivatives[i->first] =
-        this->derivative(i->first) + i->second;
-  }
+  for (size_t i = 0; i != other.derivatives.size(); i++)
+    this->derivatives[i] += other.derivatives[i];
 }
 
 void DifferentiableValue::operator-=(const DifferentiableValue &other) {
+  this->align_size(other);
+
   this->_value -= other._value;
 
-  for (auto i = other.partial_derivatives.begin();
-       i != other.partial_derivatives.end(); i++) {
-    this->partial_derivatives[i->first] =
-        this->derivative(i->first) - i->second;
-  }
+  for (size_t i = 0; i != other.derivatives.size(); i++)
+    this->derivatives[i] -= other.derivatives[i];
 }
 
 void DifferentiableValue::operator*=(const DifferentiableValue &other) {
-  for (VariableId variable : this->union_partial_derivatives_keys(other)) {
-    this->partial_derivatives[variable] =
-        this->_value * other.derivative(variable) +
-        this->derivative(variable) * other._value;
-  }
+  this->align_size(other);
+
+  for (size_t i = 0; i != this->derivatives.size(); i++)
+    this->derivatives[i] = this->_value * other.derivative(i) +
+                           this->derivatives[i] * other._value;
 
   this->_value *= other._value;
 }
 
 void DifferentiableValue::operator/=(const DifferentiableValue &other) {
+  this->align_size(other);
+
   TFloat squared_other_value = pow(other._value, 2);
 
-  for (VariableId variable : this->union_partial_derivatives_keys(other)) {
-    this->partial_derivatives[variable] =
-        (this->derivative(variable) * other._value -
-         other.derivative(variable) * this->_value) /
-        squared_other_value;
-  }
+  for (size_t i = 0; i != this->derivatives.size(); i++)
+    this->derivatives[i] = (this->derivatives[i] * other._value -
+                            other.derivative(i) * this->_value) /
+                           squared_other_value;
 
   this->_value /= other._value;
 }

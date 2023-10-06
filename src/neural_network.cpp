@@ -5,7 +5,7 @@
 using namespace std;
 
 const TFloat RANDOM_PARAMETER_MEAN = 0.0;
-const TFloat RANDOM_PARAMETER_STDDEV = 1.0;
+const TFloat RANDOM_PARAMETER_STDDEV = 0.125;
 
 pair<Matrix<DifferentiableValue>, VariableId>
 randomize_variable_matrix(size_t rows, size_t cols,
