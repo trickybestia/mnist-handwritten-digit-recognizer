@@ -1,9 +1,11 @@
 #pragma once
 
+#include "differentiable_value.hpp"
 #include "matrix.hpp"
 
 class ErrorFunction {
 public:
-  virtual Expression apply(const Matrix<Expression> &got,
-                           const Matrix<Expression> &expected) const = 0;
+  virtual DifferentiableValue
+  apply(const Matrix<DifferentiableValue> &got,
+        const Matrix<DifferentiableValue> &expected) const = 0;
 };

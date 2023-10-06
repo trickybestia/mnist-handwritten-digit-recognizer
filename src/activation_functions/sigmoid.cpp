@@ -2,6 +2,6 @@
 
 #include "sigmoid.hpp"
 
-Expression Sigmoid::apply(Expression x) const {
-  return 1.0_expr / (1.0_expr + exp(M_E, -x));
+DifferentiableValue Sigmoid::apply(const DifferentiableValue &x) const {
+  return 1.0_diff / (1.0_diff + pow(M_E, -x));
 }

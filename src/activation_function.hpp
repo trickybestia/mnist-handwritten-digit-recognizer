@@ -1,10 +1,11 @@
 #pragma once
 
+#include "differentiable_value.hpp"
 #include "matrix.hpp"
 
 class ActivationFunction {
 public:
-  virtual Expression apply(Expression x) const = 0;
+  virtual DifferentiableValue apply(const DifferentiableValue &x) const = 0;
 
-  Matrix<Expression> apply(const Matrix<Expression> &X) const;
+  Matrix<DifferentiableValue> apply(const Matrix<DifferentiableValue> &X) const;
 };

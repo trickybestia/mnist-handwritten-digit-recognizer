@@ -1,12 +1,16 @@
+#include <algorithm>
 #include <cmath>
+#include <format>
 #include <iomanip>
 #include <iostream>
-#include <random>
 #include <vector>
 
 #include "activation_functions/sigmoid.hpp"
+#include "activation_functions/tanh.hpp"
 #include "error_functions/mean_squared_error.hpp"
 #include "neural_network.hpp"
+
+const TFloat LEARNING_RATE = 0.03;
 
 using namespace std;
 
@@ -30,17 +34,27 @@ make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
 }
 
 int main() {
-  NeuralNetwork neural_network(2, 3, 1, Sigmoid(), MeanSquaredError());
+  NeuralNetwork neural_network(2, 3, 1, make_unique<Tanh>(),
+                               make_unique<MeanSquaredError>());
 
   vector<pair<Matrix<TFloat>, Matrix<TFloat>>> dataset =
       make_dataset({{{1, 1}, 0}, {{1, 0}, 1}, {{0, 1}, 1}, {{0, 0}, 0}});
 
   for (size_t epoch = 0; epoch != 1000; epoch++) {
-    cout << epoch << endl;
+    TFloat error = 0.0;
 
     for (size_t i = 0; i != dataset.size(); i++) {
       neural_network.forward(dataset[i].first);
-      neural_network.backward(dataset[i].second, 0.1);
+
+      error += neural_network.expect(dataset[i].second);
+
+      neural_network.backward(LEARNING_RATE);
+    }
+
+    error /= dataset.size();
+
+    if (epoch % 10 == 0) {
+      cout << format("Epoch: {}; Mean error: {}", epoch, error) << endl;
     }
   }
 

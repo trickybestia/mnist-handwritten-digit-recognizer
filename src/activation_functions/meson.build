@@ -1,3 +1,4 @@
 sources += files(
-  'sigmoid.cpp'
+  'sigmoid.cpp',
+  'tanh.cpp'
 )

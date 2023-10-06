@@ -1,10 +1,7 @@
 #pragma once
 
 #include <cstddef>
-#include <iterator>
 #include <vector>
-
-#include "autograd/autograd.hpp"
 
 template <typename TElement> class Matrix {
 private:
@@ -15,8 +12,6 @@ public:
 
   Matrix();
   Matrix(size_t rows, size_t cols);
-  template <typename InputIt>
-  Matrix(size_t rows, size_t cols, InputIt first, InputIt last);
 
   size_t rows() const;
   size_t cols() const;
@@ -26,6 +21,12 @@ public:
 
   Matrix transpose() const;
   Matrix dot(const Matrix &other) const;
+
+  void operator*=(TElement factor);
+
+  void operator*=(const Matrix &other);
+  void operator+=(const Matrix &other);
+  void operator-=(const Matrix &other);
 
   Matrix operator*(TElement factor) const;
 

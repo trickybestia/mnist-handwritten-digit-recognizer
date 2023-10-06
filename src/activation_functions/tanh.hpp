@@ -2,7 +2,7 @@
 
 #include "../activation_function.hpp"
 
-class Sigmoid : public ActivationFunction {
+class Tanh : public ActivationFunction {
 public:
   virtual DifferentiableValue
   apply(const DifferentiableValue &x) const override;

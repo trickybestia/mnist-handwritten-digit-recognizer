@@ -4,105 +4,122 @@
 
 using namespace std;
 
-const TFloat RANDOM_PARAMETER_MIN = -2.0;
-const TFloat RANDOM_PARAMETER_MAX = 2.0;
+const TFloat RANDOM_PARAMETER_MEAN = 0.0;
+const TFloat RANDOM_PARAMETER_STDDEV = 1.0;
 
-Matrix<Expression> randomize_variable_matrix(size_t rows, size_t cols) {
+pair<Matrix<DifferentiableValue>, VariableId>
+randomize_variable_matrix(size_t rows, size_t cols,
+                          VariableId &variable_id_offset) {
   random_device rd;
-  uniform_real_distribution<TFloat> distribution(RANDOM_PARAMETER_MIN,
-                                                 RANDOM_PARAMETER_MAX);
+  normal_distribution<TFloat> distribution(RANDOM_PARAMETER_MEAN,
+                                           RANDOM_PARAMETER_STDDEV);
 
-  Matrix<Expression> result(rows, cols);
+  pair<Matrix<DifferentiableValue>, VariableId> result{
+      Matrix<DifferentiableValue>(rows, cols), variable_id_offset};
 
-  for (size_t i = 0; i != result.data.size(); i++)
-    result.data[i] = make_shared<VariableExpression>(distribution(rd));
+  for (size_t i = 0; i != result.first.data.size(); i++)
+    result.first.data[i] =
+        DifferentiableValue(distribution(rd), variable_id_offset + i);
 
-  return result;
-}
-
-Matrix<Expression> create_variable_matrix(size_t rows, size_t cols) {
-  Matrix<Expression> result(rows, cols);
-
-  for (size_t i = 0; i != result.data.size(); i++)
-    result.data[i] = make_shared<VariableExpression>(0.0);
+  variable_id_offset += result.first.data.size();
 
   return result;
 }
 
-Matrix<TFloat> grad(Expression value, Matrix<Expression> &X) {
-  Matrix<TFloat> result(X.rows(), X.cols());
+Matrix<DifferentiableValue> grad(const DifferentiableValue &value, size_t rows,
+                                 size_t cols, VariableId variable_id_offset) {
+  Matrix<DifferentiableValue> result(rows, cols);
 
-  for (size_t i = 0; i != X.data.size(); i++)
+  for (size_t i = 0; i != rows * cols; i++)
     result.data[i] =
-        value->derivative(dynamic_pointer_cast<VariableExpression>(X.data[i]))
-            ->value();
+        DifferentiableValue(value.derivative(variable_id_offset + i));
 
   return result;
 }
 
-void update_value_expression_matrix(Matrix<Expression> &m, Matrix<TFloat> grad,
-                                    TFloat learning_rate) {
-  if (m.rows() != grad.rows() || m.cols() != grad.cols())
-    throw exception();
+Matrix<DifferentiableValue> create_const_matrix(const Matrix<TFloat> &values) {
+  Matrix<DifferentiableValue> result(values.rows(), values.cols());
 
-  for (size_t i = 0; i != m.data.size(); i++)
-    dynamic_pointer_cast<VariableExpression>(m.data[i])->set_value(
-        m.data[i]->value() - grad.data[i] * learning_rate);
+  for (size_t i = 0; i != values.data.size(); i++) {
+    result.data[i] = DifferentiableValue(values.data[i]);
+  }
+
+  return result;
 }
 
-void load_values_in_value_expression_matrix(Matrix<Expression> &m,
-                                            const Matrix<TFloat> &values) {
-  if (m.rows() != values.rows() || m.cols() != values.cols())
-    throw exception();
+Matrix<DifferentiableValue>
+create_variable_matrix(const Matrix<TFloat> &values,
+                       VariableId &variable_id_offset) {
+  Matrix<DifferentiableValue> result(values.rows(), values.cols());
 
-  for (size_t i = 0; i != m.data.size(); i++)
-    dynamic_pointer_cast<VariableExpression>(m.data[i])->set_value(
-        values.data[i]);
+  for (size_t i = 0; i != values.data.size(); i++) {
+    result.data[i] =
+        DifferentiableValue(values.data[i], variable_id_offset + i);
+  }
+
+  variable_id_offset += values.data.size();
+
+  return result;
 }
 
 NeuralNetwork::NeuralNetwork(size_t inputs_count, size_t hidden_layer_size,
                              size_t outputs_count,
-                             const ActivationFunction &activation_function,
-                             const ErrorFunction &error_function)
-    : W1(randomize_variable_matrix(hidden_layer_size, inputs_count)),
-      W2(randomize_variable_matrix(outputs_count, hidden_layer_size)),
-      B1(randomize_variable_matrix(hidden_layer_size, 1)),
-      B2(randomize_variable_matrix(outputs_count, 1)),
-      input(create_variable_matrix(inputs_count, 1)),
-      expected_output(create_variable_matrix(outputs_count, 1)),
-      inputs_count(inputs_count), hidden_layer_size(hidden_layer_size),
-      outputs_count(outputs_count) {
-  Matrix<Expression> Z1 = this->W1.dot(this->input) + this->B1;
-  Matrix<Expression> A1 = activation_function.apply(Z1);
-  Matrix<Expression> Z2 = this->W2.dot(A1) + this->B2;
+                             unique_ptr<ActivationFunction> activation_function,
+                             unique_ptr<ErrorFunction> error_function)
+    : activation_function(std::move(activation_function)),
+      error_function(std::move(error_function)), inputs_count(inputs_count),
+      hidden_layer_size(hidden_layer_size), outputs_count(outputs_count) {
+  VariableId variable_id_offset = 0;
 
-  this->output = std::move(Z2);
-  this->error = error_function.apply(this->output, this->expected_output);
+  this->W1 = randomize_variable_matrix(hidden_layer_size, inputs_count,
+                                       variable_id_offset);
+  this->W2 = randomize_variable_matrix(outputs_count, hidden_layer_size,
+                                       variable_id_offset);
+  this->B1 =
+      randomize_variable_matrix(hidden_layer_size, 1, variable_id_offset);
+  this->B2 = randomize_variable_matrix(outputs_count, 1, variable_id_offset);
 }
 
 Matrix<TFloat> NeuralNetwork::forward(const Matrix<TFloat> &input) {
-  load_values_in_value_expression_matrix(this->input, input);
+  this->input = create_const_matrix(input);
+
+  auto Z1 = this->W1.first.dot(this->input) + this->B1.first;
+  auto A1 = this->activation_function->apply(Z1);
+  this->output = this->W2.first.dot(A1) + this->B2.first;
 
   Matrix<TFloat> result(this->outputs_count, 1);
 
   for (size_t i = 0; i != this->outputs_count; i++)
-    result.data[i] = this->output.data[i]->value();
+    result.data[i] = this->output.data[i].value();
 
   return result;
 }
 
-void NeuralNetwork::backward(const Matrix<TFloat> &expected_output,
-                             TFloat learning_rate) {
-  load_values_in_value_expression_matrix(this->expected_output,
-                                         expected_output);
+TFloat NeuralNetwork::expect(const Matrix<TFloat> &expected_output) {
+  this->error = this->error_function->apply(
+      this->output, create_const_matrix(expected_output));
 
-  Matrix<TFloat> grad_W1 = grad(this->error, this->W1),
-                 grad_W2 = grad(this->error, this->W2),
-                 grad_B1 = grad(this->error, this->B1),
-                 grad_B2 = grad(this->error, this->B2);
+  return this->error.value();
+}
 
-  update_value_expression_matrix(this->W1, grad_W1, learning_rate);
-  update_value_expression_matrix(this->W2, grad_W2, learning_rate);
-  update_value_expression_matrix(this->B1, grad_B1, learning_rate);
-  update_value_expression_matrix(this->B2, grad_B2, learning_rate);
+void NeuralNetwork::backward(TFloat learning_rate) {
+  DifferentiableValue _learning_rate = DifferentiableValue(learning_rate);
+
+  Matrix<DifferentiableValue> grad_W1 =
+                                  grad(error, this->W1.first.rows(),
+                                       this->W1.first.cols(), this->W1.second),
+                              grad_W2 =
+                                  grad(error, this->W2.first.rows(),
+                                       this->W2.first.cols(), this->W2.second),
+                              grad_B1 =
+                                  grad(error, this->B1.first.rows(),
+                                       this->B1.first.cols(), this->B1.second),
+                              grad_B2 =
+                                  grad(error, this->B2.first.rows(),
+                                       this->B2.first.cols(), this->B2.second);
+
+  this->W1.first -= grad_W1 * _learning_rate;
+  this->W2.first -= grad_W2 * _learning_rate;
+  this->B1.first -= grad_B1 * _learning_rate;
+  this->B2.first -= grad_B2 * _learning_rate;
 }

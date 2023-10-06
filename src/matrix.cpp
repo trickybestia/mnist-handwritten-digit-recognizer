@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 
-#include "autograd/autograd.hpp"
+#include "differentiable_value.hpp"
 #include "matrix.hpp"
 
 using namespace std;
@@ -11,11 +11,6 @@ template <typename TElement> Matrix<TElement>::Matrix() : _rows(0), _cols(0) {}
 template <typename TElement>
 Matrix<TElement>::Matrix(size_t rows, size_t cols)
     : _rows(rows), _cols(cols), data(rows * cols) {}
-
-template <typename TElement>
-template <typename InputIt>
-Matrix<TElement>::Matrix(size_t rows, size_t cols, InputIt first, InputIt last)
-    : _rows(rows), _cols(cols), data(vector<TElement>(first, last)) {}
 
 template <typename TElement> size_t Matrix<TElement>::rows() const {
   return this->_rows;
@@ -68,12 +63,47 @@ Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
 }
 
 template <typename TElement>
-Matrix<TElement> Matrix<TElement>::operator*(TElement factor) const {
-  Matrix<TElement> result(this->_rows, this->_cols);
+void Matrix<TElement>::operator*=(TElement factor) {
+  for (size_t i = 0; i != this->data.size(); i++) {
+    this->data[i] *= factor;
+  }
+}
+
+template <typename TElement>
+void Matrix<TElement>::operator+=(const Matrix<TElement> &other) {
+  if (this->_cols != other._cols || this->_rows != other._rows)
+    throw exception();
 
   for (size_t i = 0; i != this->data.size(); i++) {
-    result.data[i] = this->data[i] * factor;
+    this->data[i] += other.data[i];
   }
+}
+
+template <typename TElement>
+void Matrix<TElement>::operator-=(const Matrix<TElement> &other) {
+  if (this->_cols != other._cols || this->_rows != other._rows)
+    throw exception();
+
+  for (size_t i = 0; i != this->data.size(); i++) {
+    this->data[i] -= other.data[i];
+  }
+}
+
+template <typename TElement>
+void Matrix<TElement>::operator*=(const Matrix<TElement> &other) {
+  if (this->_cols != other._cols || this->_rows != other._rows)
+    throw exception();
+
+  for (size_t i = 0; i != this->data.size(); i++) {
+    this->data[i] *= other.data[i];
+  }
+}
+
+template <typename TElement>
+Matrix<TElement> Matrix<TElement>::operator*(TElement factor) const {
+  Matrix<TElement> result = *this;
+
+  result *= factor;
 
   return result;
 }
@@ -81,14 +111,9 @@ Matrix<TElement> Matrix<TElement>::operator*(TElement factor) const {
 template <typename TElement>
 Matrix<TElement>
 Matrix<TElement>::operator+(const Matrix<TElement> &other) const {
-  if (this->_cols != other._cols || this->_rows != other._rows)
-    throw exception();
+  Matrix<TElement> result = *this;
 
-  Matrix<TElement> result(this->_rows, this->_cols);
-
-  for (size_t i = 0; i != this->data.size(); i++) {
-    result.data[i] = this->data[i] + other.data[i];
-  }
+  result += other;
 
   return result;
 }
@@ -96,14 +121,9 @@ Matrix<TElement>::operator+(const Matrix<TElement> &other) const {
 template <typename TElement>
 Matrix<TElement>
 Matrix<TElement>::operator-(const Matrix<TElement> &other) const {
-  if (this->_cols != other._cols || this->_rows != other._rows)
-    throw exception();
+  Matrix<TElement> result = *this;
 
-  Matrix<TElement> result(this->_rows, this->_cols);
-
-  for (size_t i = 0; i != this->data.size(); i++) {
-    result.data[i] = this->data[i] - other.data[i];
-  }
+  result -= other;
 
   return result;
 }
@@ -111,17 +131,12 @@ Matrix<TElement>::operator-(const Matrix<TElement> &other) const {
 template <typename TElement>
 Matrix<TElement>
 Matrix<TElement>::operator*(const Matrix<TElement> &other) const {
-  if (this->_cols != other._cols || this->_rows != other._rows)
-    throw exception();
+  Matrix<TElement> result = *this;
 
-  Matrix<TElement> result(this->_rows, this->_cols);
-
-  for (size_t i = 0; i != this->data.size(); i++) {
-    result.data[i] = this->data[i] * other.data[i];
-  }
+  result *= other;
 
   return result;
 }
 
-template class Matrix<Expression>;
+template class Matrix<DifferentiableValue>;
 template class Matrix<TFloat>;
