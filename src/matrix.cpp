@@ -49,12 +49,13 @@ Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
 
   Matrix<TElement> result(this->_rows, other._cols);
 
+#pragma omp parallel for
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != other._cols; j++) {
       result(i, j) = (*this)(i, 0) * other(0, j);
 
       for (size_t k = 1; k != this->_cols; k++) {
-        result(i, j) = result(i, j) + (*this)(i, k) * other(k, j);
+        result(i, j) += (*this)(i, k) * other(k, j);
       }
     }
   }
