@@ -94,9 +94,12 @@ void DifferentiableValue::operator-=(const DifferentiableValue &other) {
 void DifferentiableValue::operator*=(const DifferentiableValue &other) {
   this->align_size(other);
 
-  for (size_t i = 0; i != this->derivatives.size(); i++)
-    this->derivatives[i] = this->_value * other.derivative(i) +
+  for (size_t i = 0; i != other.derivatives.size(); i++)
+    this->derivatives[i] = this->_value * other.derivatives[i] +
                            this->derivatives[i] * other._value;
+
+  for (size_t i = other.derivatives.size(); i != this->derivatives.size(); i++)
+    this->derivatives[i] *= other._value;
 
   this->_value *= other._value;
 }
@@ -106,10 +109,13 @@ void DifferentiableValue::operator/=(const DifferentiableValue &other) {
 
   TFloat squared_other_value = pow(other._value, 2);
 
-  for (size_t i = 0; i != this->derivatives.size(); i++)
+  for (size_t i = 0; i != other.derivatives.size(); i++)
     this->derivatives[i] = (this->derivatives[i] * other._value -
-                            other.derivative(i) * this->_value) /
+                            other.derivatives[i] * this->_value) /
                            squared_other_value;
+
+  for (size_t i = 0; i != this->derivatives.size(); i++)
+    this->derivatives[i] /= other._value;
 
   this->_value /= other._value;
 }
