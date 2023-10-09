@@ -2,11 +2,18 @@
 
 #include "leaky_relu.hpp"
 
-LeakyReLU::LeakyReLU(TFloat alpha) : factor(-alpha) {}
+LeakyReLU::LeakyReLU(TFloat factor) : factor(factor) {}
 
-DifferentiableValue LeakyReLU::apply(const DifferentiableValue &x) const {
-  if (x.value() > 0.0)
+TFloat LeakyReLU::apply(TFloat x) const {
+  if (x > 0.0)
     return x;
 
-  return this->factor * x;
+  return -this->factor * x;
+}
+
+TFloat LeakyReLU::derivative(TFloat x) const {
+  if (x > 0.0)
+    return 1.0;
+
+  return this->factor;
 }

@@ -3,7 +3,8 @@
 #include "../error_function.hpp"
 
 class MeanSquaredError : public ErrorFunction {
-  virtual DifferentiableValue
-  apply(const Matrix<DifferentiableValue> &got,
-        const Matrix<DifferentiableValue> &expected) const override;
+  virtual TFloat apply(const Matrix<TFloat> &got,
+                       const Matrix<TFloat> &expected) const;
+  virtual Matrix<TFloat> derivative(const Matrix<TFloat> &got,
+                                    const Matrix<TFloat> &expected) const;
 };

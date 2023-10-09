@@ -4,6 +4,6 @@
 
 class Sigmoid : public ActivationFunction {
 public:
-  virtual DifferentiableValue
-  apply(const DifferentiableValue &x) const override;
+  virtual TFloat apply(TFloat x) const override;
+  virtual TFloat derivative(TFloat x) const override;
 };

@@ -2,10 +2,12 @@
 
 #include "tanh.hpp"
 
-DifferentiableValue Tanh::apply(const DifferentiableValue &x) const {
-  DifferentiableValue exponent = pow(M_E, 2.0_diff * x);
+TFloat Tanh::apply(TFloat x) const {
+  TFloat exponent = pow(M_E, 2.0 * x);
 
-  DifferentiableValue result = (exponent - 1.0_diff) / (exponent + 1.0_diff);
+  TFloat result = (exponent - 1.0) / (exponent + 1.0);
 
   return result;
 }
+
+TFloat Tanh::derivative(TFloat x) const { return 1.0 - pow(this->apply(x), 2); }

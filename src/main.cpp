@@ -34,7 +34,7 @@ make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
 }
 
 int main() {
-  NeuralNetwork neural_network(2, 3, 1, make_unique<LeakyReLU>(0.01),
+  NeuralNetwork neural_network(2, 3000, 1, make_unique<LeakyReLU>(0.01),
                                make_unique<MeanSquaredError>());
 
   vector<pair<Matrix<TFloat>, Matrix<TFloat>>> dataset =

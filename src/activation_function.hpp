@@ -1,11 +1,14 @@
 #pragma once
 
-#include "differentiable_value.hpp"
 #include "matrix.hpp"
 
 class ActivationFunction {
 public:
-  virtual DifferentiableValue apply(const DifferentiableValue &x) const = 0;
+  virtual ~ActivationFunction() {}
 
-  Matrix<DifferentiableValue> apply(const Matrix<DifferentiableValue> &X) const;
+  virtual TFloat apply(TFloat x) const = 0;
+  virtual TFloat derivative(TFloat x) const = 0;
+
+  Matrix<TFloat> apply(const Matrix<TFloat> &X) const;
+  Matrix<TFloat> derivative(const Matrix<TFloat> &X) const;
 };

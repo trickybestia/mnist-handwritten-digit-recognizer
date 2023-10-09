@@ -1,7 +1,6 @@
 #include <iostream>
 #include <random>
 
-#include "differentiable_value.hpp"
 #include "matrix.hpp"
 
 using namespace std;
@@ -49,7 +48,6 @@ Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
 
   Matrix<TElement> result(this->_rows, other._cols);
 
-#pragma omp parallel for
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != other._cols; j++) {
       result(i, j) = (*this)(i, 0) * other(0, j);
@@ -139,5 +137,4 @@ Matrix<TElement>::operator*(const Matrix<TElement> &other) const {
   return result;
 }
 
-template class Matrix<DifferentiableValue>;
 template class Matrix<TFloat>;

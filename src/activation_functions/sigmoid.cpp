@@ -2,6 +2,10 @@
 
 #include "sigmoid.hpp"
 
-DifferentiableValue Sigmoid::apply(const DifferentiableValue &x) const {
-  return 1.0_diff / (1.0_diff + pow(M_E, -x));
+TFloat Sigmoid::apply(TFloat x) const { return 1.0 / (1.0 + pow(M_E, -x)); }
+
+TFloat Sigmoid::derivative(TFloat x) const {
+  TFloat value = this->apply(x);
+
+  return value * (1.0 - value);
 }

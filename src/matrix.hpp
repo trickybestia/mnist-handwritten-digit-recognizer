@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <vector>
 
+typedef float TFloat;
+
 template <typename TElement> class Matrix {
 private:
   size_t _rows, _cols;

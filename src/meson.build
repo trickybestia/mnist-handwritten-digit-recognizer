@@ -2,8 +2,7 @@ sources += files(
   'main.cpp',
   'matrix.cpp',
   'neural_network.cpp',
-  'activation_function.cpp',
-  'differentiable_value.cpp'
+  'activation_function.cpp'
 )
 
 subdir('activation_functions')

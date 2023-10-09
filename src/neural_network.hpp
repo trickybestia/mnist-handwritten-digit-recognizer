@@ -7,9 +7,7 @@
 
 class NeuralNetwork {
 private:
-  std::pair<Matrix<DifferentiableValue>, VariableId> W1, W2, B1, B2;
-  DifferentiableValue error;
-  Matrix<DifferentiableValue> input, output;
+  Matrix<TFloat> W1, W2, B1, B2, A0, Z1, A1, Z2, expected_output;
 
   std::unique_ptr<ActivationFunction> activation_function;
   std::unique_ptr<ErrorFunction> error_function;

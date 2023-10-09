@@ -4,11 +4,11 @@
 
 class LeakyReLU : public ActivationFunction {
 private:
-  const DifferentiableValue factor;
+  const TFloat factor;
 
 public:
-  LeakyReLU(TFloat alpha);
+  LeakyReLU(TFloat factor);
 
-  virtual DifferentiableValue
-  apply(const DifferentiableValue &x) const override;
+  virtual TFloat apply(TFloat x) const override;
+  virtual TFloat derivative(TFloat x) const override;
 };
