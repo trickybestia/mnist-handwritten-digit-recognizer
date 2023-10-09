@@ -9,6 +9,6 @@ public:
   virtual TFloat apply(TFloat x) const = 0;
   virtual TFloat derivative(TFloat x) const = 0;
 
-  Matrix<TFloat> apply(const Matrix<TFloat> &X) const;
-  Matrix<TFloat> derivative(const Matrix<TFloat> &X) const;
+  Matrix apply(const Matrix &X) const;
+  Matrix derivative(const Matrix &X) const;
 };

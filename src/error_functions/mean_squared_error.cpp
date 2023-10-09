@@ -4,8 +4,8 @@
 
 using namespace std;
 
-TFloat MeanSquaredError::apply(const Matrix<TFloat> &got,
-                               const Matrix<TFloat> &expected) const {
+TFloat MeanSquaredError::apply(const Matrix &got,
+                               const Matrix &expected) const {
   if (got.rows() != expected.rows() || got.cols() != expected.cols())
     throw exception();
 
@@ -15,21 +15,20 @@ TFloat MeanSquaredError::apply(const Matrix<TFloat> &got,
     result += pow(got.data[i] - expected.data[i], 2.0);
   }
 
-  result /= 2.0 * got.data.size();
+  result /= got.data.size();
 
   return result;
 }
 
-Matrix<TFloat>
-MeanSquaredError::derivative(const Matrix<TFloat> &got,
-                             const Matrix<TFloat> &expected) const {
+Matrix MeanSquaredError::derivative(const Matrix &got,
+                                    const Matrix &expected) const {
   if (got.rows() != expected.rows() || got.cols() != expected.cols())
     throw exception();
 
-  Matrix<TFloat> result(got.rows(), got.cols());
+  Matrix result(got.rows(), got.cols());
 
   for (size_t i = 0; i != got.data.size(); i++) {
-    result.data[i] = (got.data[i] - expected.data[i]) / got.data.size();
+    result.data[i] = 2.0 * (got.data[i] - expected.data[i]) / got.data.size();
   }
 
   return result;

@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <random>
 
@@ -5,32 +6,24 @@
 
 using namespace std;
 
-template <typename TElement> Matrix<TElement>::Matrix() : _rows(0), _cols(0) {}
+Matrix::Matrix() : _rows(0), _cols(0) {}
 
-template <typename TElement>
-Matrix<TElement>::Matrix(size_t rows, size_t cols)
+Matrix::Matrix(size_t rows, size_t cols)
     : _rows(rows), _cols(cols), data(rows * cols) {}
 
-template <typename TElement> size_t Matrix<TElement>::rows() const {
-  return this->_rows;
-}
-template <typename TElement> size_t Matrix<TElement>::cols() const {
-  return this->_cols;
-}
+size_t Matrix::rows() const { return this->_rows; }
+size_t Matrix::cols() const { return this->_cols; }
 
-template <typename TElement>
-TElement &Matrix<TElement>::operator()(size_t i, size_t j) {
+TFloat &Matrix::operator()(size_t i, size_t j) {
   return this->data.at(i * this->_cols + j);
 }
 
-template <typename TElement>
-const TElement &Matrix<TElement>::operator()(size_t i, size_t j) const {
+TFloat Matrix::operator()(size_t i, size_t j) const {
   return this->data.at(i * this->_cols + j);
 }
 
-template <typename TElement>
-Matrix<TElement> Matrix<TElement>::transpose() const {
-  Matrix<TElement> result(this->_cols, this->_rows);
+Matrix Matrix::transpose() const {
+  Matrix result(this->_cols, this->_rows);
 
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != this->_cols; j++) {
@@ -41,12 +34,11 @@ Matrix<TElement> Matrix<TElement>::transpose() const {
   return result;
 }
 
-template <typename TElement>
-Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
+Matrix Matrix::dot(const Matrix &other) const {
   if (this->_cols != other._rows)
     throw exception();
 
-  Matrix<TElement> result(this->_rows, other._cols);
+  Matrix result(this->_rows, other._cols);
 
   for (size_t i = 0; i != this->_rows; i++) {
     for (size_t j = 0; j != other._cols; j++) {
@@ -61,15 +53,18 @@ Matrix<TElement> Matrix<TElement>::dot(const Matrix<TElement> &other) const {
   return result;
 }
 
-template <typename TElement>
-void Matrix<TElement>::operator*=(TElement factor) {
+void Matrix::zeroize() {
+  for (size_t i = 0; i != this->data.size(); i++)
+    this->data[i] = 0.0;
+}
+
+void Matrix::operator*=(TFloat factor) {
   for (size_t i = 0; i != this->data.size(); i++) {
     this->data[i] *= factor;
   }
 }
 
-template <typename TElement>
-void Matrix<TElement>::operator+=(const Matrix<TElement> &other) {
+void Matrix::operator+=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
@@ -78,8 +73,7 @@ void Matrix<TElement>::operator+=(const Matrix<TElement> &other) {
   }
 }
 
-template <typename TElement>
-void Matrix<TElement>::operator-=(const Matrix<TElement> &other) {
+void Matrix::operator-=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
@@ -88,8 +82,7 @@ void Matrix<TElement>::operator-=(const Matrix<TElement> &other) {
   }
 }
 
-template <typename TElement>
-void Matrix<TElement>::operator*=(const Matrix<TElement> &other) {
+void Matrix::operator*=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
@@ -98,43 +91,34 @@ void Matrix<TElement>::operator*=(const Matrix<TElement> &other) {
   }
 }
 
-template <typename TElement>
-Matrix<TElement> Matrix<TElement>::operator*(TElement factor) const {
-  Matrix<TElement> result = *this;
+Matrix Matrix::operator*(TFloat factor) const {
+  Matrix result = *this;
 
   result *= factor;
 
   return result;
 }
 
-template <typename TElement>
-Matrix<TElement>
-Matrix<TElement>::operator+(const Matrix<TElement> &other) const {
-  Matrix<TElement> result = *this;
+Matrix Matrix::operator+(const Matrix &other) const {
+  Matrix result = *this;
 
   result += other;
 
   return result;
 }
 
-template <typename TElement>
-Matrix<TElement>
-Matrix<TElement>::operator-(const Matrix<TElement> &other) const {
-  Matrix<TElement> result = *this;
+Matrix Matrix::operator-(const Matrix &other) const {
+  Matrix result = *this;
 
   result -= other;
 
   return result;
 }
 
-template <typename TElement>
-Matrix<TElement>
-Matrix<TElement>::operator*(const Matrix<TElement> &other) const {
-  Matrix<TElement> result = *this;
+Matrix Matrix::operator*(const Matrix &other) const {
+  Matrix result = *this;
 
   result *= other;
 
   return result;
 }
-
-template class Matrix<TFloat>;
