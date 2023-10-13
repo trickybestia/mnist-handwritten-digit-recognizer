@@ -50,8 +50,8 @@ const vector<pair<Matrix, Matrix>> DATASET = make_dataset({
 });
 
 int main() {
-  NeuralNetworkBuilder neural_network_builder(2,
-                                              make_shared<MeanSquaredError>());
+  NeuralNetworkBuilder neural_network_builder =
+      NeuralNetworkBuilder::create<MeanSquaredError>(2);
 
   neural_network_builder.add_layer<Linear>(2, 2);
   neural_network_builder.add_layer<Sigmoid>();
