@@ -4,19 +4,17 @@
 
 class NeuralNetworkBuilder {
 private:
-  size_t inputs_count;
-  std::vector<
-      std::pair<size_t, std::optional<std::shared_ptr<ActivationFunction>>>>
-      layers;
-  std::shared_ptr<ErrorFunction> error_function;
+  size_t _inputs_count;
+  std::vector<std::shared_ptr<Layer>> _layers;
+  std::shared_ptr<ErrorFunction> _error_function;
 
 public:
   NeuralNetworkBuilder(size_t inputs_count,
                        std::shared_ptr<ErrorFunction> error_function);
 
-  void add_layer(size_t size);
-  void add_layer(size_t size,
-                 std::shared_ptr<ActivationFunction> activation_function);
+  template <typename T, typename... Args> void add_layer(Args... args) {
+    this->_layers.push_back(std::make_shared<T>(args...));
+  }
 
   NeuralNetwork build() const;
 };

@@ -1,16 +1,23 @@
-#include <cmath>
 #include <format>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 
-#include "activation_functions/leaky_relu.hpp"
-#include "activation_functions/sigmoid.hpp"
-#include "activation_functions/tanh.hpp"
+#include "layers/linear.hpp"
+
+#include "layers/activation_functions/leaky_relu.hpp"
+#include "layers/activation_functions/sigmoid.hpp"
+#include "layers/activation_functions/tanh.hpp"
+
 #include "error_functions/mean_squared_error.hpp"
+
+#include "optimizers/adam.hpp"
+
 #include "neural_network_builder.hpp"
 
 const TFloat LEARNING_RATE = 0.03;
+const TFloat BETA1 = 0.9;
+const TFloat BETA2 = 0.999;
 
 using namespace std;
 
@@ -21,13 +28,15 @@ make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
   for (size_t i = 0; i != dataset.size(); i++) {
     Matrix inputs(dataset[i].first.size(), 1);
 
-    inputs.data = dataset[i].first;
+    for (size_t j = 0; j != inputs.size(); j++) {
+      inputs(j) = dataset[i].first[j];
+    }
 
     Matrix outputs(1, 1);
 
-    outputs(0, 0) = dataset[i].second;
+    outputs(0) = dataset[i].second;
 
-    result.push_back({std::move(inputs), std::move(outputs)});
+    result.push_back({inputs, outputs});
   }
 
   return result;
@@ -44,25 +53,32 @@ int main() {
   NeuralNetworkBuilder neural_network_builder(2,
                                               make_shared<MeanSquaredError>());
 
-  neural_network_builder.add_layer(3, make_shared<LeakyReLU>(0.05));
-  neural_network_builder.add_layer(1);
+  neural_network_builder.add_layer<Linear>(2, 2);
+  neural_network_builder.add_layer<Sigmoid>();
+  neural_network_builder.add_layer<Linear>(2, 1);
 
   NeuralNetwork neural_network = neural_network_builder.build();
+  Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
+
+  TFloat error = 0.0;
 
   for (size_t epoch = 0; epoch != 1000; epoch++) {
-    TFloat error = 0.0;
-
     for (size_t i = 0; i != DATASET.size(); i++) {
       neural_network.forward(DATASET[i].first);
 
       error += neural_network.expect(DATASET[i].second);
 
-      neural_network.backward(LEARNING_RATE);
+      neural_network.backward();
     }
 
+    optimizer.step();
+
     if (epoch % 10 == 0) {
-      cout << format("Epoch: {}; mean error: {}", epoch, error / DATASET.size())
-           << endl;
+      error /= DATASET.size() * 10;
+
+      cout << format("Epoch: {}; mean error: {}\n", epoch, error);
+
+      error = 0.0;
     }
   }
 

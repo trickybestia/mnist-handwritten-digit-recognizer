@@ -4,7 +4,7 @@
 
 class LeakyReLU : public ActivationFunction {
 private:
-  const TFloat factor;
+  const TFloat _factor;
 
 public:
   LeakyReLU(TFloat factor);

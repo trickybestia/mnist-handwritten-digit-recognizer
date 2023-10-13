@@ -11,11 +11,11 @@ TFloat MeanSquaredError::apply(const Matrix &got,
 
   TFloat result = 0.0;
 
-  for (size_t i = 0; i != got.data.size(); i++) {
-    result += pow(got.data[i] - expected.data[i], 2.0);
+  for (size_t i = 0; i != got.size(); i++) {
+    result += pow(got(i) - expected(i), 2.0);
   }
 
-  result /= got.data.size();
+  result /= got.size();
 
   return result;
 }
@@ -27,8 +27,8 @@ Matrix MeanSquaredError::derivative(const Matrix &got,
 
   Matrix result(got.rows(), got.cols());
 
-  for (size_t i = 0; i != got.data.size(); i++) {
-    result.data[i] = 2.0 * (got.data[i] - expected.data[i]) / got.data.size();
+  for (size_t i = 0; i != got.size(); i++) {
+    result(i) = 2.0 * (got(i) - expected(i)) / got.size();
   }
 
   return result;

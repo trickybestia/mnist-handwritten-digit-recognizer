@@ -1,53 +1,34 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 
-#include "activation_function.hpp"
 #include "error_function.hpp"
+#include "function.hpp"
+#include "layer.hpp"
 
-class NeuralNetwork {
+class NeuralNetwork : public Function {
 public:
-  struct LinearLayer {
-    Matrix weights, bias, weights_grad, bias_grad;
-    std::optional<std::shared_ptr<ActivationFunction>> activation_function;
-
-    std::optional<Matrix> input;
-
-    LinearLayer(
-        size_t inputs, size_t outputs,
-        std::optional<std::shared_ptr<ActivationFunction>> activation_function);
-
-    Matrix forward();
-    void backward(const Matrix &layer_error);
-
-    Matrix previous_layer_error(const Matrix &layer_error);
-
-    void flush_gradients(TFloat learning_rate);
-  };
-
 private:
-  std::vector<LinearLayer> layers;
+  std::vector<std::shared_ptr<Layer>> _layers;
 
-  Matrix output, expected_output;
+  Matrix _output, _expected_output, _parameters, _gradient;
 
-  std::shared_ptr<ActivationFunction> activation_function;
-  std::shared_ptr<ErrorFunction> error_function;
+  std::shared_ptr<ErrorFunction> _error_function;
 
   void randomize_parameters(TFloat mean, TFloat stddev);
 
 public:
   const size_t inputs_count;
 
-  NeuralNetwork(
-      size_t inputs_count,
-      std::vector<
-          std::pair<size_t, std::optional<std::shared_ptr<ActivationFunction>>>>
-          layers,
-      std::shared_ptr<ErrorFunction> error_function);
+  NeuralNetwork(size_t inputs_count, std::vector<std::shared_ptr<Layer>> layers,
+                std::shared_ptr<ErrorFunction> error_function);
 
-  Matrix forward(const Matrix &input);
+  Matrix forward(Matrix input);
 
-  TFloat expect(const Matrix &expected_output);
-  void backward(TFloat learning_rate);
+  TFloat expect(Matrix expected_output);
+
+  void backward();
+
+  virtual Matrix &parameters() override;
+  virtual Matrix &gradient() override;
 };
