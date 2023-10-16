@@ -7,14 +7,17 @@ using namespace std;
 void Matrix::swap(Matrix &other) {
   std::swap(other._rows, this->_rows);
   std::swap(other._cols, this->_cols);
+  std::swap(other._size, this->_size);
   std::swap(other._owns_data, this->_owns_data);
   std::swap(other._data, this->_data);
 }
 
-Matrix::Matrix() : _rows(0), _cols(0), _owns_data(false), _data(nullptr) {}
+Matrix::Matrix()
+    : _rows(0), _cols(0), _size(0), _owns_data(false), _data(nullptr) {}
 
 Matrix::Matrix(size_t rows, size_t cols)
-    : _rows(rows), _cols(cols), _owns_data(false), _data(nullptr) {
+    : _rows(rows), _cols(cols), _size(rows * cols), _owns_data(false),
+      _data(nullptr) {
   if (this->size() != 0) {
     this->_data = new TFloat[this->size()];
     this->_owns_data = true;
@@ -22,17 +25,20 @@ Matrix::Matrix(size_t rows, size_t cols)
 }
 
 Matrix::Matrix(size_t rows, size_t cols, TFloat *data)
-    : _rows(rows), _cols(cols), _owns_data(false), _data(data) {}
+    : _rows(rows), _cols(cols), _size(rows * cols), _owns_data(false),
+      _data(data) {}
 
 Matrix::Matrix(const Matrix &other)
-    : _rows(other._rows), _cols(other._cols), _owns_data(other._owns_data),
-      _data(other._data) {
+    : _rows(other._rows), _cols(other._cols), _size(other._size),
+      _owns_data(other._owns_data), _data(other._data) {
   if (other._owns_data) {
     this->_data = new TFloat[other.size()];
 
     copy(other._data, other._data + other.size(), this->_data);
   }
 }
+
+Matrix::Matrix(Matrix &&other) : Matrix() { this->swap(other); }
 
 Matrix::~Matrix() {
   if (this->_owns_data)
@@ -41,8 +47,9 @@ Matrix::~Matrix() {
 
 size_t Matrix::rows() const { return this->_rows; }
 size_t Matrix::cols() const { return this->_cols; }
-size_t Matrix::size() const { return this->_rows * this->_cols; }
+size_t Matrix::size() const { return this->_size; }
 
+const TFloat *Matrix::data() const { return this->_data; }
 TFloat *Matrix::data() { return this->_data; }
 
 TFloat Matrix::operator()(size_t i, size_t j) const {
@@ -54,14 +61,14 @@ TFloat &Matrix::operator()(size_t i, size_t j) {
 }
 
 TFloat Matrix::operator()(size_t i) const {
-  if (i >= this->size())
+  if (i >= this->_size)
     throw exception();
 
   return this->_data[i];
 }
 
 TFloat &Matrix::operator()(size_t i) {
-  if (i >= this->size())
+  if (i >= this->_size)
     throw exception();
 
   return this->_data[i];
@@ -85,12 +92,15 @@ Matrix Matrix::dot(const Matrix &other) const {
 
   Matrix result(this->_rows, other._cols);
 
-  for (size_t i = 0; i != this->_rows; i++) {
-    for (size_t j = 0; j != other._cols; j++) {
-      result(i, j) = (*this)(i, 0) * other(0, j);
+  result.zeroize();
 
-      for (size_t k = 1; k != this->_cols; k++) {
-        result(i, j) += (*this)(i, k) * other(k, j);
+#pragma omp parallel for
+  for (size_t i = 0; i != this->_rows; i++) {
+    for (size_t k = 1; k != this->_cols; k++) {
+      TFloat this_ik = (*this)(i, k);
+
+      for (size_t j = 0; j != other._cols; j++) {
+        result(i, j) += this_ik * other(k, j);
       }
     }
   }
@@ -101,7 +111,8 @@ Matrix Matrix::dot(const Matrix &other) const {
 Matrix Matrix::pow(TFloat power) {
   Matrix result(this->_rows, this->_cols);
 
-  for (size_t i = 0; i != this->size(); i++) {
+#pragma omp parallel for
+  for (size_t i = 0; i != this->_size; i++) {
     result._data[i] = ::pow(this->_data[i], power);
   }
 
@@ -109,31 +120,31 @@ Matrix Matrix::pow(TFloat power) {
 }
 
 void Matrix::zeroize() {
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] = 0.0;
   }
 }
 
 void Matrix::operator*=(TFloat factor) {
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] *= factor;
   }
 }
 
 void Matrix::operator/=(TFloat factor) {
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] /= factor;
   }
 }
 
 void Matrix::operator+=(TFloat number) {
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] += number;
   }
 }
 
 void Matrix::operator-=(TFloat number) {
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] -= number;
   }
 }
@@ -142,7 +153,7 @@ void Matrix::operator+=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] += other._data[i];
   }
 }
@@ -151,7 +162,7 @@ void Matrix::operator-=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] -= other._data[i];
   }
 }
@@ -160,7 +171,7 @@ void Matrix::operator*=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] *= other._data[i];
   }
 }
@@ -169,7 +180,7 @@ void Matrix::operator/=(const Matrix &other) {
   if (this->_cols != other._cols || this->_rows != other._rows)
     throw exception();
 
-  for (size_t i = 0; i != this->size(); i++) {
+  for (size_t i = 0; i != this->_size; i++) {
     this->_data[i] /= other._data[i];
   }
 }
@@ -238,7 +249,18 @@ Matrix Matrix::operator/(const Matrix &other) const {
   return result;
 }
 
-Matrix &Matrix::operator=(Matrix other) {
+Matrix &Matrix::operator=(const Matrix &other) {
+  Matrix copied_other(other);
+
+  this->swap(copied_other);
+
+  return *this;
+}
+
+Matrix &Matrix::operator=(Matrix &&other) {
+  Matrix empty;
+
+  this->swap(empty);
   this->swap(other);
 
   return *this;

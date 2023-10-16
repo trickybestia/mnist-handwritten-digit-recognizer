@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../activation_function.hpp"
+#include "../simple_activation_function.hpp"
 
-class Tanh : public ActivationFunction {
+class Tanh : public SimpleActivationFunction {
 public:
   virtual TFloat apply(TFloat x) const override;
   virtual TFloat derivative(TFloat x) const override;

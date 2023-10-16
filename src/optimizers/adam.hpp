@@ -11,7 +11,7 @@ private:
 
 public:
   Adam(Function &function, TFloat learning_rate, TFloat beta1 = 0.9,
-       TFloat beta2 = 0.999, TFloat eps = 10e-6);
+       TFloat beta2 = 0.999, TFloat eps = 1e-5);
 
   virtual void step() override;
 };

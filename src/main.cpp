@@ -9,83 +9,116 @@
 #include "layers/activation_functions/sigmoid.hpp"
 #include "layers/activation_functions/tanh.hpp"
 
-#include "error_functions/mean_squared_error.hpp"
+#include "layers/dropout.hpp"
+
+#include "error_functions/cross_entropy_softmax.hpp"
+#include "error_functions/mean.hpp"
+#include "error_functions/mean_squared.hpp"
 
 #include "optimizers/adam.hpp"
+#include "optimizers/momentum.hpp"
+#include "optimizers/sgd.hpp"
 
 #include "neural_network_builder.hpp"
 
-const TFloat LEARNING_RATE = 0.03;
+#include "mnist/load_dataset.hpp"
+
+#include "utils.hpp"
+
+const TFloat LEARNING_RATE = 0.003;
 const TFloat BETA1 = 0.9;
 const TFloat BETA2 = 0.999;
 
+const size_t DATASET_SIZE = 60000;
+
 using namespace std;
 
-vector<pair<Matrix, Matrix>>
-make_dataset(const vector<pair<vector<TFloat>, TFloat>> &dataset) {
-  vector<pair<Matrix, Matrix>> result;
+void showcase(NeuralNetwork &neural_network, const mnist::Dataset &dataset) {
+  for (size_t i = 0; i != dataset.train_entries().size(); i++) {
+    const mnist::DatasetEntry &entry = dataset.train_entries()[i];
 
-  for (size_t i = 0; i != dataset.size(); i++) {
-    Matrix inputs(dataset[i].first.size(), 1);
+    Matrix output = neural_network.forward(entry.image());
 
-    for (size_t j = 0; j != inputs.size(); j++) {
-      inputs(j) = dataset[i].first[j];
+    cout << static_cast<int>(entry.label()) << endl;
+
+    for (size_t j = 0; j != output.size(); j++) {
+      cout << format("{}: {}", j, output(j)) << endl;
     }
 
-    Matrix outputs(1, 1);
-
-    outputs(0) = dataset[i].second;
-
-    result.push_back({inputs, outputs});
+    cin.get();
   }
-
-  return result;
 }
 
-const vector<pair<Matrix, Matrix>> DATASET = make_dataset({
-    {{0, 0}, 0},
-    {{0, 1}, 1},
-    {{1, 0}, 1},
-    {{1, 1}, 0},
-});
-
 int main() {
-  NeuralNetworkBuilder neural_network_builder =
-      NeuralNetworkBuilder::create<MeanSquaredError>(2);
+  auto dataset = mnist::load_dataset("/home/trickybestia/Downloads/mnist/");
 
-  neural_network_builder.add_layer<Linear>(2, 2);
-  neural_network_builder.add_layer<Sigmoid>();
-  neural_network_builder.add_layer<Linear>(2, 1);
+  auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
+
+  NeuralNetworkBuilder neural_network_builder(784, cross_entropy_softmax);
+
+  neural_network_builder.add_layer(make_shared<Linear>(784, 300));
+  neural_network_builder.add_layer(make_shared<LeakyReLU>(0.01));
+
+  // neural_network_builder.add_layer(make_shared<Dropout>(0.25));
+
+  neural_network_builder.add_layer(make_shared<Linear>(300, 10));
+  neural_network_builder.add_layer(cross_entropy_softmax);
 
   NeuralNetwork neural_network = neural_network_builder.build();
-  Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
+  // Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
+  SGD optimizer(neural_network, LEARNING_RATE);
+  // Momentum optimizer(neural_network, LEARNING_RATE);
 
-  TFloat error = 0.0;
+  load_parameters(neural_network.parameters(), "model.bin");
 
-  for (size_t epoch = 0; epoch != 1000; epoch++) {
-    for (size_t i = 0; i != DATASET.size(); i++) {
-      neural_network.forward(DATASET[i].first);
+  showcase(neural_network, dataset);
 
-      error += neural_network.expect(DATASET[i].second);
+  // return 0;
+
+  size_t j = 0;
+  TFloat mean_error = 0.0;
+
+  for (size_t epoch = 0;; epoch++) {
+    for (size_t i = 0; i != DATASET_SIZE; i++, j++) {
+      const mnist::DatasetEntry &entry = dataset.train_entries()[i];
+
+      neural_network.forward(entry.image());
+
+      Matrix expected_output(10, 1);
+      expected_output.zeroize();
+      expected_output(entry.label()) = 1.0;
+
+      neural_network.expect(std::move(expected_output));
+
+      mean_error += neural_network.value();
 
       neural_network.backward();
-    }
 
-    optimizer.step();
+      if (j % 128 == 0) {
+        neural_network.gradient() /= 128;
 
-    if (epoch % 10 == 0) {
-      error /= DATASET.size() * 10;
+        optimizer.step();
 
-      cout << format("Epoch: {}; mean error: {}\n", epoch, error);
+        neural_network.gradient().zeroize();
+      }
 
-      error = 0.0;
+      if (j % 10000 == 9999) {
+        cout << format("Epoch: {:6}; i: {:6}; mean error: {}\n", epoch, i,
+                       mean_error / 10000);
+
+        save_parameters(neural_network.parameters(), "model.bin");
+
+        mean_error = 0.0;
+      }
     }
   }
 
-  Matrix inputs(2, 1);
+  showcase(neural_network, dataset);
+
+  /*Matrix inputs(2, 1);
 
   while (cin >> inputs(0, 0) >> inputs(1, 0)) {
     cout << fixed << setprecision(numeric_limits<TFloat>::digits10 + 1)
          << neural_network.forward(inputs)(0, 0) << endl;
-  }
+  }*/
 }

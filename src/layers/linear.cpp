@@ -20,7 +20,7 @@ void Linear::set_gradient(TFloat *value) {
 }
 
 Matrix Linear::forward(Matrix input) {
-  this->_input = input;
+  this->_input = std::move(input);
 
   return this->_weights.dot(this->_input) + this->_bias;
 }

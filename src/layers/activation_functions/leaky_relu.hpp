@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../activation_function.hpp"
+#include "../simple_activation_function.hpp"
 
-class LeakyReLU : public ActivationFunction {
+class LeakyReLU : public SimpleActivationFunction {
 private:
   const TFloat _factor;
 

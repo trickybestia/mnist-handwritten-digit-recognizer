@@ -2,7 +2,7 @@
 
 #include "sigmoid.hpp"
 
-TFloat Sigmoid::apply(TFloat x) const { return 1.0 / (1.0 + pow(M_E, -x)); }
+TFloat Sigmoid::apply(TFloat x) const { return 1.0 / (1.0 + exp(-x)); }
 
 TFloat Sigmoid::derivative(TFloat x) const {
   TFloat value = this->apply(x);

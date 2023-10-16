@@ -7,7 +7,7 @@ typedef float TFloat;
 
 class Matrix {
 private:
-  size_t _rows, _cols;
+  size_t _rows, _cols, _size;
   bool _owns_data;
   TFloat *_data;
 
@@ -19,6 +19,7 @@ public:
   Matrix(size_t rows, size_t cols, TFloat *data);
 
   Matrix(const Matrix &other);
+  Matrix(Matrix &&other);
 
   ~Matrix();
 
@@ -26,6 +27,7 @@ public:
   size_t cols() const;
   size_t size() const;
 
+  const TFloat *data() const;
   TFloat *data();
 
   TFloat operator()(size_t i, size_t j) const;
@@ -60,5 +62,6 @@ public:
   Matrix operator+(const Matrix &other) const;
   Matrix operator-(const Matrix &other) const;
 
-  Matrix &operator=(Matrix other);
+  Matrix &operator=(const Matrix &other);
+  Matrix &operator=(Matrix &&other);
 };

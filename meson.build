@@ -9,10 +9,12 @@ project(
   ]
 )
 
+openmp = dependency('openmp')
+
 add_project_arguments([ '-march=native', '-mtune=native' ], language: 'cpp')
 
 sources = []
 
 subdir('src')
 
-exe = executable('neural-network', sources)
+executable('neural-network', sources, dependencies : [ openmp ])

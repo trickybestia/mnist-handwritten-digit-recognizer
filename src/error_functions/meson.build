@@ -1,3 +1,5 @@
 sources += files(
-  'mean_squared_error.cpp'
+  'cross_entropy_softmax.cpp',
+  'mean_squared.cpp',
+  'mean.cpp',
 )

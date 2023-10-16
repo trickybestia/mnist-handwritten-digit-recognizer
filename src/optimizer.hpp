@@ -4,9 +4,9 @@
 
 class Optimizer {
 protected:
-  Function &function;
+  Function &_function;
 
-  Optimizer(Function &function) : function(function) {}
+  Optimizer(Function &function) : _function(function) {}
 
 public:
   virtual void step() = 0;

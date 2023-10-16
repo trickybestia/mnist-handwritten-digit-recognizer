@@ -14,7 +14,7 @@ Adam::Adam(Function &function, TFloat learning_rate, TFloat beta1, TFloat beta2,
 }
 
 void Adam::step() {
-  Matrix &parameters_gradient = this->function.gradient();
+  Matrix &parameters_gradient = this->_function.gradient();
 
   this->_parameters_m *= this->_beta1;
   this->_parameters_m += parameters_gradient * (1.0 - this->_beta1);
@@ -26,9 +26,7 @@ void Adam::step() {
          parameters_vt =
              this->_parameters_v / (1.0 - pow(this->_beta2, this->_iteration));
 
-  this->function.parameters() -= parameters_mt /
-                                 (parameters_vt.pow(0.5) + this->_eps) *
-                                 this->_learning_rate;
-
-  parameters_gradient.zeroize();
+  this->_function.parameters() -= parameters_mt /
+                                  (parameters_vt.pow(0.5) + this->_eps) *
+                                  this->_learning_rate;
 }

@@ -5,19 +5,19 @@
 
 using namespace std;
 
-const TFloat RANDOM_PARAMETER_MEAN = 0.0;
-const TFloat RANDOM_PARAMETER_STDDEV = 1.0;
+const TFloat RANDOM_PARAMETER_MIN = -0.3;
+const TFloat RANDOM_PARAMETER_MAX = 0.3;
 
 void randomize_matrix(Matrix &matrix, random_device &rd,
-                      normal_distribution<TFloat> &distribution) {
+                      uniform_real_distribution<TFloat> &distribution) {
   for (size_t i = 0; i != matrix.size(); i++) {
     matrix(i) = distribution(rd);
   }
 }
 
-void NeuralNetwork::randomize_parameters(TFloat mean, TFloat stddev) {
+void NeuralNetwork::randomize_parameters(TFloat min, TFloat max) {
   random_device rd;
-  normal_distribution distribution(mean, stddev);
+  uniform_real_distribution distribution(min, max);
 
   randomize_matrix(this->_parameters, rd, distribution);
 }
@@ -36,7 +36,7 @@ NeuralNetwork::NeuralNetwork(size_t inputs_count,
   this->_parameters = Matrix(parameters_count, 1);
   this->_gradient = Matrix(parameters_count, 1);
 
-  this->randomize_parameters(RANDOM_PARAMETER_MEAN, RANDOM_PARAMETER_STDDEV);
+  this->randomize_parameters(RANDOM_PARAMETER_MIN, RANDOM_PARAMETER_MAX);
   this->_gradient.zeroize();
 
   size_t parameters_offset = 0;
@@ -51,19 +51,19 @@ NeuralNetwork::NeuralNetwork(size_t inputs_count,
 }
 
 Matrix NeuralNetwork::forward(Matrix input) {
-  this->_output = input;
+  this->_output = std::move(input);
 
   for (size_t i = 0; i != this->_layers.size(); i++) {
-    this->_output = this->_layers[i]->forward(this->_output);
+    this->_output = this->_layers[i]->forward(std::move(this->_output));
   }
 
   return this->_output;
 }
 
-TFloat NeuralNetwork::expect(Matrix expected_output) {
-  this->_expected_output = expected_output;
-
-  return this->_error_function->apply(this->_output, this->_expected_output);
+void NeuralNetwork::expect(Matrix expected_output) {
+  this->_expected_output = std::move(expected_output);
+  this->_error =
+      this->_error_function->apply(this->_output, this->_expected_output);
 }
 
 void NeuralNetwork::backward() {
@@ -80,6 +80,8 @@ void NeuralNetwork::backward() {
 
   this->_layers.front()->backward(layer_error);
 }
+
+TFloat NeuralNetwork::value() { return this->_error; }
 
 Matrix &NeuralNetwork::parameters() { return this->_parameters; }
 
