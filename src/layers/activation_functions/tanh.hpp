@@ -1,9 +1,13 @@
 #pragma once
 
-#include "../simple_activation_function.hpp"
+#include "../activation_function.hpp"
 
-class Tanh : public SimpleActivationFunction {
+class Tanh : public ActivationFunction {
+private:
+  Matrix _output;
+
 public:
-  virtual TFloat apply(TFloat x) const override;
-  virtual TFloat derivative(TFloat x) const override;
+  virtual Matrix forward(Matrix input) override;
+
+  virtual Matrix previous_layer_error(const Matrix &layer_error) override;
 };
