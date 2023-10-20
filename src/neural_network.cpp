@@ -60,10 +60,10 @@ Matrix NeuralNetwork::forward(Matrix input) {
   return this->_output;
 }
 
-void NeuralNetwork::expect(Matrix expected_output) {
+TFloat NeuralNetwork::expect(Matrix expected_output) {
   this->_expected_output = std::move(expected_output);
-  this->_error =
-      this->_error_function->apply(this->_output, this->_expected_output);
+
+  return this->_error_function->apply(this->_output, this->_expected_output);
 }
 
 void NeuralNetwork::backward() {
@@ -80,8 +80,6 @@ void NeuralNetwork::backward() {
 
   this->_layers.front()->backward(layer_error);
 }
-
-TFloat NeuralNetwork::value() { return this->_error; }
 
 Matrix &NeuralNetwork::parameters() { return this->_parameters; }
 
