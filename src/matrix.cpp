@@ -96,7 +96,7 @@ Matrix Matrix::dot(const Matrix &other) const {
 
 #pragma omp parallel for
   for (size_t i = 0; i != this->_rows; i++) {
-    for (size_t k = 1; k != this->_cols; k++) {
+    for (size_t k = 0; k != this->_cols; k++) {
       TFloat this_ik = (*this)(i, k);
 
       for (size_t j = 0; j != other._cols; j++) {
