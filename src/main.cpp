@@ -25,7 +25,7 @@
 
 #include "utils.hpp"
 
-const TFloat LEARNING_RATE = 0.003;
+const TFloat LEARNING_RATE = 0.01;
 const TFloat BETA1 = 0.9;
 const TFloat BETA2 = 0.999;
 
