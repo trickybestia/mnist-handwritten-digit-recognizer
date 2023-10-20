@@ -6,9 +6,7 @@ Matrix Tanh::forward(Matrix input) {
   this->_output = Matrix(input.rows(), input.cols());
 
   for (size_t i = 0; i != input.size(); i++) {
-    TFloat exponent = exp(2.0 * input(i));
-
-    this->_output(i) = (exponent - 1.0) / (exponent + 1.0);
+    this->_output(i) = tanh(input(i));
   }
 
   return this->_output;
