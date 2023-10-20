@@ -54,7 +54,7 @@ int main() {
 
   auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
 
-  NeuralNetworkBuilder neural_network_builder(784, cross_entropy_softmax);
+  NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
 
   neural_network_builder.add_layer(make_shared<Linear>(784, 512));
   neural_network_builder.add_layer(make_shared<Sigmoid>());

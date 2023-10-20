@@ -17,9 +17,7 @@ private:
   void randomize_parameters(TFloat mean, TFloat stddev);
 
 public:
-  const size_t inputs_count;
-
-  NeuralNetwork(size_t inputs_count, std::vector<std::shared_ptr<Layer>> layers,
+  NeuralNetwork(std::vector<std::shared_ptr<Layer>> layers,
                 std::shared_ptr<ErrorFunction> error_function);
 
   Matrix forward(Matrix input);

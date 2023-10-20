@@ -22,11 +22,9 @@ void NeuralNetwork::randomize_parameters(TFloat min, TFloat max) {
   randomize_matrix(this->_parameters, rd, distribution);
 }
 
-NeuralNetwork::NeuralNetwork(size_t inputs_count,
-                             vector<shared_ptr<Layer>> layers,
+NeuralNetwork::NeuralNetwork(vector<shared_ptr<Layer>> layers,
                              shared_ptr<ErrorFunction> error_function)
-    : _layers(layers), _error_function(error_function),
-      inputs_count(inputs_count) {
+    : _layers(layers), _error_function(error_function) {
   size_t parameters_count = 0;
 
   for (size_t i = 0; i != this->_layers.size(); i++) {
