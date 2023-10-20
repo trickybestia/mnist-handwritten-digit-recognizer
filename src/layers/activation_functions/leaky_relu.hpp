@@ -1,14 +1,15 @@
 #pragma once
 
-#include "../simple_activation_function.hpp"
+#include "../activation_function.hpp"
 
-class LeakyReLU : public SimpleActivationFunction {
+class LeakyReLU : public ActivationFunction {
 private:
   const TFloat _factor;
 
 public:
   LeakyReLU(TFloat factor);
 
-  virtual TFloat apply(TFloat x) const override;
-  virtual TFloat derivative(TFloat x) const override;
+  virtual Vector forward(const Vector &input) override;
+
+  virtual Vector previous_layer_error(const Vector &layer_error) override;
 };

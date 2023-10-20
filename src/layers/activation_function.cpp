@@ -6,4 +6,4 @@ void ActivationFunction::set_parameters(TFloat *) {}
 
 void ActivationFunction::set_gradient(TFloat *) {}
 
-void ActivationFunction::backward(const Matrix &) {}
+void ActivationFunction::backward(const Vector &) {}

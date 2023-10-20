@@ -1,6 +1,5 @@
 sources += files(
   'main.cpp',
-  'matrix.cpp',
   'neural_network_builder.cpp',
   'neural_network.cpp',
   'utils.cpp',

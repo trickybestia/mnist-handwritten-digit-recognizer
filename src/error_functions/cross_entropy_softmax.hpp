@@ -5,13 +5,13 @@
 
 class CrossEntropySoftmax : public ErrorFunction, public ActivationFunction {
 private:
-  Matrix _expected_output, _output;
+  Vector _expected_output, _output;
 
 public:
-  virtual TFloat apply(const Matrix &got, const Matrix &expected) override;
-  virtual Matrix derivative(const Matrix &got, const Matrix &expected) override;
+  virtual TFloat apply(const Vector &got, const Vector &expected) override;
+  virtual Vector derivative(const Vector &got, const Vector &expected) override;
 
-  virtual Matrix forward(Matrix input) override;
+  virtual Vector forward(const Vector &input) override;
 
-  virtual Matrix previous_layer_error(const Matrix &layer_error) override;
+  virtual Vector previous_layer_error(const Vector &layer_error) override;
 };

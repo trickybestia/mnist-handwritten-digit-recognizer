@@ -4,10 +4,10 @@
 
 class Sigmoid : public ActivationFunction {
 private:
-  Matrix _output;
+  Vector _output;
 
 public:
-  virtual Matrix forward(Matrix input) override;
+  virtual Vector forward(const Vector &input) override;
 
-  virtual Matrix previous_layer_error(const Matrix &layer_error) override;
+  virtual Vector previous_layer_error(const Vector &layer_error) override;
 };

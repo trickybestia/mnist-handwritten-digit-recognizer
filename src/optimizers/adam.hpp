@@ -7,7 +7,7 @@ private:
   TFloat _learning_rate, _beta1, _beta2, _eps;
   size_t _iteration;
 
-  Matrix _parameters_m, _parameters_v;
+  Vector _parameters_m, _parameters_v;
 
 public:
   Adam(Function &function, TFloat learning_rate, TFloat beta1 = 0.9,

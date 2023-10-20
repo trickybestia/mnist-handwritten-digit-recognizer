@@ -10,5 +10,5 @@ public:
   virtual void set_parameters(TFloat *value) override;
   virtual void set_gradient(TFloat *value) override;
 
-  virtual void backward(const Matrix &layer_error) override;
+  virtual void backward(const Vector &layer_error) override;
 };

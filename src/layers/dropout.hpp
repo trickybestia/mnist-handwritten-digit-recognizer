@@ -6,7 +6,7 @@
 
 class Dropout : public Layer {
 private:
-  Matrix _factors;
+  Vector _factors;
   std::mt19937_64 _rng;
   std::bernoulli_distribution _distribution;
 
@@ -18,9 +18,9 @@ public:
   virtual void set_parameters(TFloat *value) override;
   virtual void set_gradient(TFloat *value) override;
 
-  virtual Matrix forward(Matrix input) override;
+  virtual Vector forward(const Vector &input) override;
 
-  virtual void backward(const Matrix &layer_error) override;
+  virtual void backward(const Vector &layer_error) override;
 
-  virtual Matrix previous_layer_error(const Matrix &layer_error) override;
+  virtual Vector previous_layer_error(const Vector &layer_error) override;
 };

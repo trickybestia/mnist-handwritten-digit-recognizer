@@ -2,10 +2,7 @@
 
 Momentum::Momentum(Function &function, TFloat learning_rate, TFloat beta)
     : Optimizer(function), _learning_rate(learning_rate), _beta(beta),
-      _parameters_v(function.parameters().rows(),
-                    function.parameters().cols()) {
-  this->_parameters_v.zeroize();
-}
+      _parameters_v(Vector::Zero(function.parameters().size())) {}
 
 void Momentum::step() {
   this->_parameters_v = this->_parameters_v * this->_beta +

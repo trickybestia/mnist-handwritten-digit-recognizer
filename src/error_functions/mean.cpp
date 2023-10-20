@@ -4,28 +4,17 @@
 
 using namespace std;
 
-TFloat Mean::apply(const Matrix &got, const Matrix &expected) {
-  if (got.rows() != expected.rows() || got.cols() != expected.cols())
-    throw exception();
-
-  TFloat result = 0.0;
-
-  for (size_t i = 0; i != got.size(); i++) {
-    result += abs(got(i) - expected(i));
-  }
-
-  result /= got.size();
-
-  return result;
+TFloat Mean::apply(const Vector &got, const Vector &expected) {
+  return (got - expected).cwiseAbs().mean();
 }
 
-Matrix Mean::derivative(const Matrix &got, const Matrix &expected) {
+Vector Mean::derivative(const Vector &got, const Vector &expected) {
   if (got.rows() != expected.rows() || got.cols() != expected.cols())
     throw exception();
 
-  Matrix result(got.rows(), got.cols());
+  Vector result(got.size());
 
-  for (size_t i = 0; i != got.size(); i++) {
+  for (ssize_t i = 0; i != got.size(); i++) {
     if (got(i) >= expected(i)) {
       result(i) = 1.0;
     } else {

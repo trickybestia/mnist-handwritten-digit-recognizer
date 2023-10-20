@@ -14,12 +14,12 @@ void Dropout::set_parameters(TFloat *) {}
 
 void Dropout::set_gradient(TFloat *) {}
 
-void Dropout::backward(const Matrix &) {}
+void Dropout::backward(const Vector &) {}
 
-Matrix Dropout::forward(Matrix input) {
-  this->_factors = Matrix(input.rows(), input.cols());
+Vector Dropout::forward(const Vector &input) {
+  this->_factors = Vector(input.size());
 
-  for (size_t i = 0; i != input.size(); i++) {
+  for (ssize_t i = 0; i != input.size(); i++) {
     if (this->_distribution(this->_rng)) {
       this->_factors(i) = 0.0;
     } else {
@@ -27,9 +27,9 @@ Matrix Dropout::forward(Matrix input) {
     }
   }
 
-  return input * this->_factors;
+  return input.array() * this->_factors.array();
 }
 
-Matrix Dropout::previous_layer_error(const Matrix &layer_error) {
-  return layer_error * this->_factors;
+Vector Dropout::previous_layer_error(const Vector &layer_error) {
+  return layer_error.array() * this->_factors.array();
 }

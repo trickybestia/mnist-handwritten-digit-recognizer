@@ -63,7 +63,9 @@ load_dataset(path images_path, path labels_path) {
     }
 
     entries.push_back(mnist::DatasetEntry(
-        label, Matrix(rows * cols, 1, matrix_data.data() + i * rows * cols)));
+        label, Eigen::Map<Eigen::Matrix<TFloat, Eigen::Dynamic, Eigen::Dynamic,
+                                        Eigen::RowMajor>>(
+                   matrix_data.data() + i * rows * cols, rows, cols)));
   }
 
   return {std::move(matrix_data), std::move(entries)};

@@ -8,29 +8,24 @@
 
 class NeuralNetwork : public Function {
 private:
-  TFloat _error;
-
   std::vector<std::shared_ptr<Layer>> _layers;
 
-  Matrix _output, _expected_output, _parameters, _gradient;
+  Vector _output, _expected_output, _parameters, _gradient;
 
   std::shared_ptr<ErrorFunction> _error_function;
 
   void randomize_parameters(TFloat mean, TFloat stddev);
 
 public:
-  const size_t inputs_count;
-
-  NeuralNetwork(size_t inputs_count, std::vector<std::shared_ptr<Layer>> layers,
+  NeuralNetwork(std::vector<std::shared_ptr<Layer>> layers,
                 std::shared_ptr<ErrorFunction> error_function);
 
-  Matrix forward(Matrix input);
+  Vector forward(const Vector &input);
 
-  void expect(Matrix expected_output);
+  TFloat expect(const Vector &expected_output);
 
   void backward();
 
-  virtual TFloat value() override;
-  virtual Matrix &parameters() override;
-  virtual Matrix &gradient() override;
+  virtual Vector &parameters() override;
+  virtual Vector &gradient() override;
 };
