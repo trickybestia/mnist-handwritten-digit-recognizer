@@ -1,7 +1,5 @@
 #include <format>
-#include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include "layers/linear.hpp"
 
@@ -28,6 +26,9 @@
 using namespace std;
 
 const bool TRAIN = false;
+
+const TFloat RANDOM_PARAMETER_MIN = -0.3;
+const TFloat RANDOM_PARAMETER_MAX = 0.3;
 
 const TFloat LEARNING_RATE = 0.01;
 const TFloat BETA1 = 0.9;
@@ -92,6 +93,9 @@ int main() {
 
     return 0;
   }
+
+  neural_network.randomize_parameters(RANDOM_PARAMETER_MIN,
+                                      RANDOM_PARAMETER_MAX);
 
   // Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
   SGD optimizer(neural_network, LEARNING_RATE);

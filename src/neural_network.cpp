@@ -5,9 +5,6 @@
 
 using namespace std;
 
-const TFloat RANDOM_PARAMETER_MIN = -0.3;
-const TFloat RANDOM_PARAMETER_MAX = 0.3;
-
 void randomize_matrix(Matrix &matrix, random_device &rd,
                       uniform_real_distribution<TFloat> &distribution) {
   for (size_t i = 0; i != matrix.size(); i++) {
@@ -34,7 +31,6 @@ NeuralNetwork::NeuralNetwork(vector<shared_ptr<Layer>> layers,
   this->_parameters = Matrix(parameters_count, 1);
   this->_gradient = Matrix(parameters_count, 1);
 
-  this->randomize_parameters(RANDOM_PARAMETER_MIN, RANDOM_PARAMETER_MAX);
   this->_gradient.zeroize();
 
   size_t parameters_offset = 0;

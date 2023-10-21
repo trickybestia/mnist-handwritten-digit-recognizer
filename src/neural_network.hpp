@@ -14,11 +14,11 @@ private:
 
   std::shared_ptr<ErrorFunction> _error_function;
 
-  void randomize_parameters(TFloat mean, TFloat stddev);
-
 public:
   NeuralNetwork(std::vector<std::shared_ptr<Layer>> layers,
                 std::shared_ptr<ErrorFunction> error_function);
+
+  void randomize_parameters(TFloat min, TFloat max);
 
   Matrix forward(Matrix input);
 
