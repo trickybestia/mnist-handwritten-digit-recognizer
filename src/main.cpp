@@ -25,13 +25,44 @@
 
 #include "utils.hpp"
 
+using namespace std;
+
+const bool TRAIN = false;
+
 const TFloat LEARNING_RATE = 0.01;
 const TFloat BETA1 = 0.9;
 const TFloat BETA2 = 0.999;
 
 const size_t SAMPLES_BETWEEN_LOG = 1000;
 
-using namespace std;
+NeuralNetwork create_neural_network(bool train) {
+  auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
+
+  NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
+
+  neural_network_builder.add_layer(make_shared<Linear>(784, 512));
+  neural_network_builder.add_layer(make_shared<Sigmoid>());
+
+  if (train)
+    neural_network_builder.add_layer(make_shared<Dropout>(0.25));
+
+  neural_network_builder.add_layer(make_shared<Linear>(512, 128));
+  neural_network_builder.add_layer(make_shared<Sigmoid>());
+
+  if (train)
+    neural_network_builder.add_layer(make_shared<Dropout>(0.25));
+
+  neural_network_builder.add_layer(make_shared<Linear>(128, 64));
+  neural_network_builder.add_layer(make_shared<Sigmoid>());
+
+  if (train)
+    neural_network_builder.add_layer(make_shared<Dropout>(0.25));
+
+  neural_network_builder.add_layer(make_shared<Linear>(64, 10));
+  neural_network_builder.add_layer(cross_entropy_softmax);
+
+  return neural_network_builder.build();
+}
 
 void showcase(NeuralNetwork &neural_network, const mnist::Dataset &dataset) {
   for (size_t i = 0; i != dataset.train_entries().size(); i++) {
@@ -52,34 +83,19 @@ void showcase(NeuralNetwork &neural_network, const mnist::Dataset &dataset) {
 int main() {
   auto dataset = mnist::load_dataset("/home/trickybestia/Downloads/mnist/");
 
-  auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
+  NeuralNetwork neural_network = create_neural_network(TRAIN);
 
-  NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
+  if (!TRAIN) {
+    load_parameters(neural_network.parameters(), "model.bin");
 
-  neural_network_builder.add_layer(make_shared<Linear>(784, 512));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
+    showcase(neural_network, dataset);
 
-  // neural_network_builder.add_layer(make_shared<Dropout>(0.25));
+    return 0;
+  }
 
-  neural_network_builder.add_layer(make_shared<Linear>(512, 128));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
-
-  neural_network_builder.add_layer(make_shared<Linear>(128, 64));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
-
-  neural_network_builder.add_layer(make_shared<Linear>(64, 10));
-  neural_network_builder.add_layer(cross_entropy_softmax);
-
-  NeuralNetwork neural_network = neural_network_builder.build();
   // Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
   SGD optimizer(neural_network, LEARNING_RATE);
   // Momentum optimizer(neural_network, LEARNING_RATE);
-
-  // load_parameters(neural_network.parameters(), "model.bin");
-
-  // showcase(neural_network, dataset);
-
-  // return 0;
 
   TFloat mean_error = 0.0;
   size_t correctly_predicted = 0;
