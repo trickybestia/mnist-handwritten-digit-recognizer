@@ -5,5 +5,5 @@
 
 #include "matrix.hpp"
 
-void save_parameters(const Matrix &parameters, std::filesystem::path path);
-void load_parameters(Matrix &parameters, std::filesystem::path path);
+void save_matrix(const Matrix &parameters, std::filesystem::path path);
+void load_matrix(Matrix &parameters, std::filesystem::path path);
