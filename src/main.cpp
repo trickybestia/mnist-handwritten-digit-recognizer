@@ -78,7 +78,7 @@ TFloat compute_test_accuracy(NeuralNetwork &neural_network,
 void showcase(NeuralNetwork &neural_network) {
   Matrix input(28 * 28, 1);
 
-  while (true) {
+  do {
     load_matrix(input, "image.bin");
 
     Matrix output = neural_network.forward(input);
@@ -93,9 +93,7 @@ void showcase(NeuralNetwork &neural_network) {
 
       cout << s << endl;
     }
-
-    cin.get();
-  }
+  } while (cin.ignore(numeric_limits<streamsize>::max(), '\n') && !cin.eof());
 }
 
 int main(int argc, char **argv) {
