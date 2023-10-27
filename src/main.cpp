@@ -38,24 +38,21 @@ NeuralNetwork create_neural_network(bool train, bool train_with_dropout) {
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
-  neural_network_builder.add_layer(make_shared<Linear>(784, 512));
-  neural_network_builder.add_layer(make_shared<Tanh>());
+  neural_network_builder.add_layer(make_shared<Linear>(784, 500));
+  neural_network_builder.add_layer(make_shared<Sigmoid>());
 
   if (train && train_with_dropout)
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
-  neural_network_builder.add_layer(make_shared<Linear>(512, 128));
-  neural_network_builder.add_layer(make_shared<Tanh>());
+  neural_network_builder.add_layer(make_shared<Linear>(500, 300));
+  neural_network_builder.add_layer(make_shared<Sigmoid>());
 
   if (train && train_with_dropout)
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
-  neural_network_builder.add_layer(make_shared<Linear>(128, 64));
-  neural_network_builder.add_layer(make_shared<Tanh>());
-
-  neural_network_builder.add_layer(make_shared<Linear>(64, 10));
+  neural_network_builder.add_layer(make_shared<Linear>(300, 10));
   neural_network_builder.add_layer(cross_entropy_softmax);
 
   return neural_network_builder.build();
