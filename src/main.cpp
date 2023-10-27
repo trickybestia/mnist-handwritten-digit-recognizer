@@ -7,7 +7,7 @@
 #include "layers/activation_functions/sigmoid.hpp"
 #include "layers/activation_functions/tanh.hpp"
 
-#include "layers/dropout.hpp"
+#include "layers/uniform_dropout.hpp"
 
 #include "error_functions/cross_entropy_softmax.hpp"
 #include "error_functions/mean.hpp"
@@ -32,7 +32,7 @@ const bool TRAIN_WITH_DROPOUT = true;
 const TFloat RANDOM_PARAMETER_MIN = -0.3;
 const TFloat RANDOM_PARAMETER_MAX = 0.3;
 
-const TFloat LEARNING_RATE = 0.003;
+const TFloat LEARNING_RATE = 0.01;
 const TFloat BETA1 = 0.9;
 const TFloat BETA2 = 0.999;
 
@@ -56,16 +56,25 @@ NeuralNetwork create_neural_network() {
   NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
 
   if (TRAIN && TRAIN_WITH_DROPOUT)
-    neural_network_builder.add_layer(make_shared<Dropout>(0.2));
+    neural_network_builder.add_layer(
+        make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(784, 512));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
+  neural_network_builder.add_layer(make_shared<Tanh>());
+
+  if (TRAIN && TRAIN_WITH_DROPOUT)
+    neural_network_builder.add_layer(
+        make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(512, 128));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
+  neural_network_builder.add_layer(make_shared<Tanh>());
+
+  if (TRAIN && TRAIN_WITH_DROPOUT)
+    neural_network_builder.add_layer(
+        make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(128, 64));
-  neural_network_builder.add_layer(make_shared<Sigmoid>());
+  neural_network_builder.add_layer(make_shared<Tanh>());
 
   neural_network_builder.add_layer(make_shared<Linear>(64, 10));
   neural_network_builder.add_layer(cross_entropy_softmax);

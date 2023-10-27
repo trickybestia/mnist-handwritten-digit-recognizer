@@ -4,15 +4,15 @@
 
 #include "../layer.hpp"
 
-class Dropout : public Layer {
+class UniformDropout : public Layer {
 private:
   Matrix _factors;
   std::mt19937_64 _rng;
-  std::bernoulli_distribution _distribution;
-  TFloat _value;
+  std::bernoulli_distribution _probability_distribution;
+  std::uniform_real_distribution<TFloat> _value_distribution;
 
 public:
-  Dropout(float probability, TFloat value = 0.0);
+  UniformDropout(float probability, TFloat min, TFloat max);
 
   virtual size_t parameters_count() const override;
 
