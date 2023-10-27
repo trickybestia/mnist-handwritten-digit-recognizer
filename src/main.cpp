@@ -1,6 +1,8 @@
 #include <format>
 #include <iostream>
 
+#include "args.hpp"
+
 #include "layers/linear.hpp"
 
 #include "layers/activation_functions/leaky_relu.hpp"
@@ -25,51 +27,28 @@
 
 using namespace std;
 
-const bool TRAIN = false;
-const bool TRAIN_EXISTING_MODEL = true;
-const bool TRAIN_WITH_DROPOUT = true;
-
-const TFloat RANDOM_PARAMETER_MIN = -0.3;
-const TFloat RANDOM_PARAMETER_MAX = 0.3;
-
-const TFloat LEARNING_RATE = 0.01;
-const TFloat BETA1 = 0.9;
-const TFloat BETA2 = 0.999;
-
 const size_t SAMPLES_BETWEEN_LOG = 1000;
 
-size_t max_item_index(const Matrix &matrix) {
-  size_t result = 0;
-
-  for (size_t i = 0; i != matrix.size(); i++) {
-    if (matrix(i) > matrix(result)) {
-      result = i;
-    }
-  }
-
-  return result;
-}
-
-NeuralNetwork create_neural_network() {
+NeuralNetwork create_neural_network(bool train, bool train_with_dropout) {
   auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
 
   NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
 
-  if (TRAIN && TRAIN_WITH_DROPOUT)
+  if (train && train_with_dropout)
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(784, 512));
   neural_network_builder.add_layer(make_shared<Tanh>());
 
-  if (TRAIN && TRAIN_WITH_DROPOUT)
+  if (train && train_with_dropout)
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(512, 128));
   neural_network_builder.add_layer(make_shared<Tanh>());
 
-  if (TRAIN && TRAIN_WITH_DROPOUT)
+  if (train && train_with_dropout)
     neural_network_builder.add_layer(
         make_shared<UniformDropout>(0.2, 0.0, 1.0));
 
@@ -122,32 +101,53 @@ void showcase(NeuralNetwork &neural_network) {
   }
 }
 
-int main() {
-  auto dataset = mnist::load_dataset("/home/trickybestia/Downloads/mnist/");
+int main(int argc, char **argv) {
+  Args args = parse_args(argc, argv);
 
-  NeuralNetwork neural_network = create_neural_network();
+  NeuralNetwork neural_network =
+      create_neural_network(args.train, args.train_with_dropout);
 
-  if (!TRAIN || TRAIN_EXISTING_MODEL) {
-    load_matrix(neural_network.parameters(), "model.bin");
+  if (args.showcase || (args.train && args.train_existing_model) ||
+      args.compute_test_accuracy) {
+    load_matrix(neural_network.parameters(), args.model);
   }
 
-  if (!TRAIN) {
-    cout << format("Test set accuracy: {}\n",
-                   compute_test_accuracy(neural_network, dataset));
-
+  if (args.showcase) {
     showcase(neural_network);
 
     return 0;
   }
 
-  if (!TRAIN_EXISTING_MODEL) {
-    neural_network.randomize_parameters(RANDOM_PARAMETER_MIN,
-                                        RANDOM_PARAMETER_MAX);
+  if (!args.compute_test_accuracy && !args.showcase && !args.train) {
+    return 1;
   }
 
-  // Adam optimizer(neural_network, LEARNING_RATE, BETA1, BETA2);
-  SGD optimizer(neural_network, LEARNING_RATE);
-  // Momentum optimizer(neural_network, LEARNING_RATE);
+  auto dataset = mnist::load_dataset(args.dataset.value());
+
+  if (args.compute_test_accuracy) {
+    cout << format("Test set accuracy: {}\n",
+                   compute_test_accuracy(neural_network, dataset));
+
+    return 0;
+  }
+
+  if (!args.train_existing_model) {
+    neural_network.randomize_parameters(args.random_parameter_min,
+                                        args.random_parameter_max);
+  }
+
+  std::unique_ptr<Optimizer> optimizer;
+
+  if (args.optimizer == "SGD") {
+    optimizer = make_unique<SGD>(neural_network, args.learning_rate);
+  } else if (args.optimizer == "Adam") {
+    optimizer = make_unique<Adam>(neural_network, args.beta1, args.beta2);
+  } else if (args.optimizer == "Momentum") {
+    optimizer =
+        make_unique<Momentum>(neural_network, args.learning_rate, args.beta1);
+  } else {
+    return 1;
+  }
 
   TFloat mean_error = 0.0;
   size_t correctly_predicted = 0;
@@ -166,7 +166,7 @@ int main() {
     }
 
     if (j != 0 && j % 30000 == 0) {
-      save_matrix(neural_network.parameters(), "model.bin");
+      save_matrix(neural_network.parameters(), args.model);
 
       cout << "Parameters saved\n";
     }
@@ -189,7 +189,7 @@ int main() {
 
     neural_network.backward();
 
-    optimizer.step();
+    optimizer->step();
 
     neural_network.gradient().zeroize();
   }

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-typedef float TFloat;
+#include "tfloat.hpp"
 
 class Matrix {
 private:

@@ -1,0 +1,18 @@
+#pragma once
+
+#include <filesystem>
+#include <optional>
+
+#include "tfloat.hpp"
+
+struct Args {
+  std::filesystem::path model;
+  std::optional<std::filesystem::path> dataset;
+  std::optional<std::string> optimizer;
+  bool train, train_existing_model, train_with_dropout, compute_test_accuracy,
+      showcase;
+  TFloat learning_rate, random_parameter_min, random_parameter_max, beta1,
+      beta2;
+};
+
+Args parse_args(int argc, char **argv);

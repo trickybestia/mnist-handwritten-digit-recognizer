@@ -1,5 +1,5 @@
 project(
-  'neural-network',
+  'mnist-handwritten-digit-recognizer',
   'cpp',
   default_options: [
     'cpp_std=c++20',
@@ -10,6 +10,7 @@ project(
 )
 
 openmp = dependency('openmp')
+tclap = dependency('tclap')
 
 add_project_arguments([ '-march=native', '-mtune=native' ], language: 'cpp')
 
@@ -17,4 +18,4 @@ sources = []
 
 subdir('src')
 
-executable('neural-network', sources, dependencies : [ openmp ])
+executable('mnist-handwritten-digit-recognizer', sources, dependencies : [ openmp, tclap ])
