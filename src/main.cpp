@@ -97,9 +97,16 @@ void showcase(NeuralNetwork &neural_network) {
     load_matrix(input, "image.bin");
 
     Matrix output = neural_network.forward(input);
+    size_t digit = max_item_index(output);
 
     for (size_t j = 0; j != output.size(); j++) {
-      cout << format("{}: {}", j, output(j)) << endl;
+      string s = format("{}: {:.4f}", j, output(j));
+
+      if (j == digit) {
+        s = format("\x1B[107m\x1B[30m{}\033[0m\033[0m", s);
+      }
+
+      cout << s << endl;
     }
 
     cin.get();
