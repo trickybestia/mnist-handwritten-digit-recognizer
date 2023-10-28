@@ -5,18 +5,18 @@
 using namespace std;
 using namespace std::filesystem;
 
-void save_matrix(const Matrix &parameters, path path) {
+void save_matrix(const Matrix &matrix, path path) {
   ofstream file(path);
 
-  file.write(reinterpret_cast<const char *>(parameters.data()),
-             parameters.size() * sizeof(TFloat));
+  file.write(reinterpret_cast<const char *>(matrix.data()),
+             matrix.size() * sizeof(TFloat));
 }
 
-void load_matrix(Matrix &parameters, path path) {
+void load_matrix(Matrix &matrix, path path) {
   ifstream file(path);
 
-  file.read(reinterpret_cast<char *>(parameters.data()),
-            parameters.size() * sizeof(TFloat));
+  file.read(reinterpret_cast<char *>(matrix.data()),
+            matrix.size() * sizeof(TFloat));
 }
 
 size_t max_item_index(const Matrix &matrix) {
