@@ -6,8 +6,7 @@
 #include "tfloat.hpp"
 
 struct Args {
-  std::filesystem::path model;
-  std::optional<std::filesystem::path> dataset;
+  std::optional<std::filesystem::path> model, dataset, dump_dataset;
   std::optional<std::string> optimizer;
   bool train, train_existing_model, train_with_dropout, compute_test_accuracy,
       showcase;

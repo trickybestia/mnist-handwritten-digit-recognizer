@@ -22,6 +22,7 @@
 #include "neural_network_builder.hpp"
 
 #include "mnist/load_dataset.hpp"
+#include "src/mnist/dump_dataset.hpp"
 
 #include "utils.hpp"
 
@@ -104,7 +105,7 @@ int main(int argc, char **argv) {
 
   if (args.showcase || (args.train && args.train_existing_model) ||
       args.compute_test_accuracy) {
-    load_matrix(neural_network.parameters(), args.model);
+    load_matrix(neural_network.parameters(), args.model.value());
   }
 
   if (args.showcase) {
@@ -113,11 +114,18 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  if (!args.compute_test_accuracy && !args.showcase && !args.train) {
+  if (!args.compute_test_accuracy && !args.showcase && !args.train &&
+      !args.dump_dataset.has_value()) {
     return 1;
   }
 
   auto dataset = mnist::load_dataset(args.dataset.value());
+
+  if (args.dump_dataset.has_value()) {
+    dump_dataset(dataset, args.dump_dataset.value());
+
+    return 0;
+  }
 
   if (args.compute_test_accuracy) {
     cout << format("Test set accuracy: {}\n",
@@ -161,7 +169,7 @@ int main(int argc, char **argv) {
     }
 
     if (j != 0 && j % 30000 == 0) {
-      save_matrix(neural_network.parameters(), args.model);
+      save_matrix(neural_network.parameters(), args.model.value());
 
       cout << "Parameters saved\n";
     }
