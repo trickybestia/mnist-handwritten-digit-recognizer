@@ -102,7 +102,7 @@ Go to [http://yann.lecun.com/exdb/mnist/](). You need four files:
 
     By default, if model file exists, it will be overwritten. To train existing model use `--train-existing-model` flag.
 
-    To train with dropout (actually noise) layers use `--train-with-dropout` flag.
+    To train with noise layers use `--train-with-noise` flag.
 
     To view all available arguments, use `--help` flag.
 

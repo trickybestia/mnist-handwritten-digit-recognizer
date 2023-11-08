@@ -4,7 +4,7 @@
 
 #include "../layer.hpp"
 
-class UniformDropout : public Layer {
+class UniformNoise : public Layer {
 private:
   Matrix _factors;
   std::mt19937_64 _rng;
@@ -12,7 +12,7 @@ private:
   std::uniform_real_distribution<TFloat> _value_distribution;
 
 public:
-  UniformDropout(float probability, TFloat min, TFloat max);
+  UniformNoise(float probability, TFloat min, TFloat max);
 
   virtual size_t parameters_count() const override;
 

@@ -9,7 +9,7 @@
 #include "layers/activation_functions/sigmoid.hpp"
 #include "layers/activation_functions/tanh.hpp"
 
-#include "layers/uniform_dropout.hpp"
+#include "layers/uniform_noise.hpp"
 
 #include "error_functions/cross_entropy_softmax.hpp"
 #include "error_functions/mean.hpp"
@@ -30,28 +30,25 @@ using namespace std;
 
 const size_t SAMPLES_BETWEEN_LOG = 1000;
 
-NeuralNetwork create_neural_network(bool train, bool train_with_dropout) {
+NeuralNetwork create_neural_network(bool train, bool train_with_noise) {
   auto cross_entropy_softmax = make_shared<CrossEntropySoftmax>();
 
   NeuralNetworkBuilder neural_network_builder(cross_entropy_softmax);
 
-  if (train && train_with_dropout)
-    neural_network_builder.add_layer(
-        make_shared<UniformDropout>(0.2, 0.0, 1.0));
+  if (train && train_with_noise)
+    neural_network_builder.add_layer(make_shared<UniformNoise>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(784, 500));
   neural_network_builder.add_layer(make_shared<Sigmoid>());
 
-  if (train && train_with_dropout)
-    neural_network_builder.add_layer(
-        make_shared<UniformDropout>(0.2, 0.0, 1.0));
+  if (train && train_with_noise)
+    neural_network_builder.add_layer(make_shared<UniformNoise>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(500, 300));
   neural_network_builder.add_layer(make_shared<Sigmoid>());
 
-  if (train && train_with_dropout)
-    neural_network_builder.add_layer(
-        make_shared<UniformDropout>(0.2, 0.0, 1.0));
+  if (train && train_with_noise)
+    neural_network_builder.add_layer(make_shared<UniformNoise>(0.2, 0.0, 1.0));
 
   neural_network_builder.add_layer(make_shared<Linear>(300, 10));
   neural_network_builder.add_layer(cross_entropy_softmax);
@@ -101,7 +98,7 @@ int main(int argc, char **argv) {
   Args args = parse_args(argc, argv);
 
   NeuralNetwork neural_network =
-      create_neural_network(args.train, args.train_with_dropout);
+      create_neural_network(args.train, args.train_with_noise);
 
   if (args.showcase || (args.train && args.train_existing_model) ||
       args.compute_test_accuracy) {

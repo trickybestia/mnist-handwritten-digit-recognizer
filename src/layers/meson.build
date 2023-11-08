@@ -3,7 +3,7 @@ sources += files(
   'dropout.cpp',
   'linear.cpp',
   'simple_activation_function.cpp',
-  'uniform_dropout.cpp',
+  'uniform_noise.cpp',
 )
 
 subdir('activation_functions')

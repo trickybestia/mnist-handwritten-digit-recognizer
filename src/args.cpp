@@ -27,8 +27,8 @@ Args parse_args(int argc, char **argv) {
   SwitchArg showcase_arg("s", "showcase", "Run in showcase mode.");
   SwitchArg train_existing_model_arg("e", "train-existing-model",
                                      "Train existing model.", cmdline);
-  SwitchArg train_with_dropout_arg("p", "train-with-dropout",
-                                   "Train model with dropout.", cmdline);
+  SwitchArg train_with_noise_arg("p", "train-with-noise",
+                                 "Train model with noise.", cmdline);
   SwitchArg compute_test_accuracy_arg(
       "a", "compute-test-accuracy", "Compute model accuracy on test dataset.");
   ValueArg<TFloat> learning_rate_arg("l", "learning-rate",
@@ -68,7 +68,7 @@ Args parse_args(int argc, char **argv) {
                        : nullopt,
       .train = train_arg.getValue(),
       .train_existing_model = train_existing_model_arg.getValue(),
-      .train_with_dropout = train_with_dropout_arg.getValue(),
+      .train_with_noise = train_with_noise_arg.getValue(),
       .compute_test_accuracy = compute_test_accuracy_arg.getValue(),
       .showcase = showcase_arg.getValue(),
       .learning_rate = learning_rate_arg.getValue(),

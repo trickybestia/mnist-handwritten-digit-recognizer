@@ -1,23 +1,23 @@
-#include "uniform_dropout.hpp"
+#include "uniform_noise.hpp"
 
 using namespace std;
 
-UniformDropout::UniformDropout(float probability, TFloat min, TFloat max)
+UniformNoise::UniformNoise(float probability, TFloat min, TFloat max)
     : _probability_distribution(probability), _value_distribution(min, max) {
   random_device rd;
 
   this->_rng.seed(rd());
 }
 
-size_t UniformDropout::parameters_count() const { return 0; }
+size_t UniformNoise::parameters_count() const { return 0; }
 
-void UniformDropout::set_parameters(TFloat *) {}
+void UniformNoise::set_parameters(TFloat *) {}
 
-void UniformDropout::set_gradient(TFloat *) {}
+void UniformNoise::set_gradient(TFloat *) {}
 
-void UniformDropout::backward(const Matrix &) {}
+void UniformNoise::backward(const Matrix &) {}
 
-Matrix UniformDropout::forward(Matrix input) {
+Matrix UniformNoise::forward(Matrix input) {
   Matrix result(input.rows(), input.cols());
 
   this->_factors = Matrix(input.rows(), input.cols());
@@ -37,6 +37,6 @@ Matrix UniformDropout::forward(Matrix input) {
   return result;
 }
 
-Matrix UniformDropout::previous_layer_error(const Matrix &layer_error) {
+Matrix UniformNoise::previous_layer_error(const Matrix &layer_error) {
   return layer_error * this->_factors;
 }
