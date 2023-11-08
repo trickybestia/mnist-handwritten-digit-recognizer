@@ -10,14 +10,14 @@ DIY neural network for digit recognition
 
 ## Features
 
-* Train and run neural network for handwritten digit recognition using [MNIST database of handwritten digits](http://yann.lecun.com/exdb/mnist/) (or other compatible dataset).
+* Train and run neural network for handwritten digit recognition using [MNIST database of handwritten digits](http://yann.lecun.com/exdb/mnist/).
 * Simple process of running neural network: draw digit in Paint, run `preprocess_image.py`, and run built binary.
 * Dump dataset entries into a directory with PNGs.
 * Set learning hyperparameters and optimizer from command line.
 * Available optimizers: SGD (Stochastic Gradient Descent), SGD with Momentum, Adam.
 * Change network architecture and error function using flexible layer architecture (through code edition).
 
-## Build under Linux
+## Building under Linux
 
 Though it also should be possible to build it on any platform supported by Meson build system, only Linux build has been tested.
 
@@ -149,7 +149,3 @@ python dump_dataset.py mnist_images
 ```
 
 It will create `mnist_images_pngs` directory. It will contain PNG files with the following name format: `{image index}_{image class}.png`.
-
-## Using custom MNIST-like dataset
-
-🚧 TODO
