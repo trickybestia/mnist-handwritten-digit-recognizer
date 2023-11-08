@@ -139,7 +139,7 @@ Go to [http://yann.lecun.com/exdb/mnist/](). You need four files:
 
         It will give probabilities of image being each digit. The highest probability will be highlighted with white background.
 
-    4. Repeat steps 1-2, and send Enter to running `mnist-handwritten-digit-recognizer`. It will reload image and evaluate model on it. It is not necessary to restart it every time.
+    4. Repeat substeps 4.1-4.2, and send Enter to running `mnist-handwritten-digit-recognizer`. It will reload image and evaluate model on it. It is not necessary to restart it every time.
 
 ### Dumping images from dataset to a directory
 
