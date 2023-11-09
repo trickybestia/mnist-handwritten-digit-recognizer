@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include "../exceptions.hpp"
 #include "load_dataset.hpp"
 
 using namespace std;
@@ -32,6 +33,16 @@ pair<vector<TFloat>, vector<mnist::DatasetEntry>>
 load_dataset(path images_path, path labels_path) {
   ifstream images_file(images_path, ifstream::binary);
   ifstream labels_file(labels_path, ifstream::binary);
+
+  images_file.exceptions(ifstream::badbit);
+  labels_file.exceptions(ifstream::badbit);
+
+  if (!images_file.good()) {
+    throw FileNotFoundException(images_path);
+  }
+  if (!labels_file.good()) {
+    throw FileNotFoundException(labels_path);
+  }
 
   if (read_big_endian(images_file) != 2051 ||
       read_big_endian(labels_file) != 2049)

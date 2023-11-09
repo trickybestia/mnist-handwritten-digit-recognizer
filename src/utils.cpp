@@ -1,19 +1,38 @@
 #include <fstream>
 
+#include "exceptions.hpp"
 #include "utils.hpp"
 
 using namespace std;
 using namespace std::filesystem;
 
-void save_matrix(const Matrix &matrix, path path) {
+void save_matrix(const Matrix &matrix, const path &path) {
   ofstream file(path);
+
+  file.exceptions(ofstream::badbit);
 
   file.write(reinterpret_cast<const char *>(matrix.data()),
              matrix.size() * sizeof(TFloat));
 }
 
-void load_matrix(Matrix &matrix, path path) {
+void load_matrix(Matrix &matrix, const path &path) {
   ifstream file(path);
+
+  if (!file.good()) {
+    throw FileNotFoundException(path);
+  }
+
+  file.seekg(0, ifstream::end);
+
+  auto file_size = file.tellg();
+
+  file.seekg(0);
+
+  if (static_cast<decltype(file_size)>(matrix.size() * sizeof(TFloat)) !=
+      file_size) {
+    throw FileSizeMismatchException(path, matrix.size() * sizeof(TFloat),
+                                    file_size);
+  }
 
   file.read(reinterpret_cast<char *>(matrix.data()),
             matrix.size() * sizeof(TFloat));

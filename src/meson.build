@@ -1,5 +1,6 @@
 sources += files(
   'args.cpp',
+  'exceptions.cpp',
   'main.cpp',
   'matrix.cpp',
   'neural_network_builder.cpp',
