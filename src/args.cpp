@@ -8,7 +8,7 @@ using namespace TCLAP;
 using namespace std;
 
 Args parse_args(int argc, char **argv) {
-  CmdLine cmdline("DIY neural network for digit recognition");
+  CmdLine cmdline("DIY neural network for digit recognition.");
 
   ValueArg<string> model_arg("m", "model", "Path to model file.", false, "",
                              "path", cmdline);
