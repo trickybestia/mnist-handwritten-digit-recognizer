@@ -39,7 +39,7 @@ meson compile -C build
 ## Usage
 
 1. Download MNIST database of handwritten digits.
-Go to [http://yann.lecun.com/exdb/mnist/](). You need four files:
+Go to [http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/). You need four files:
 
     * train-images-idx3-ubyte.gz
     * train-labels-idx1-ubyte.gz
