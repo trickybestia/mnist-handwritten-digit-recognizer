@@ -9,7 +9,7 @@ using namespace std::filesystem;
 void save_matrix(const Matrix &matrix, const path &path) {
   ofstream file(path);
 
-  file.exceptions(ofstream::badbit);
+  file.exceptions(ofstream::failbit);
 
   file.write(reinterpret_cast<const char *>(matrix.data()),
              matrix.size() * sizeof(TFloat));

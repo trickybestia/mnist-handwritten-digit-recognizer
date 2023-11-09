@@ -34,8 +34,8 @@ load_dataset(path images_path, path labels_path) {
   ifstream images_file(images_path, ifstream::binary);
   ifstream labels_file(labels_path, ifstream::binary);
 
-  images_file.exceptions(ifstream::badbit);
-  labels_file.exceptions(ifstream::badbit);
+  images_file.exceptions(ifstream::failbit);
+  labels_file.exceptions(ifstream::failbit);
 
   if (!images_file.good()) {
     throw FileNotFoundException(images_path);
