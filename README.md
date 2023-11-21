@@ -1,12 +1,14 @@
-# mnist-handwritten-digit-recognizer
-
-DIY neural network for digit recognition
-
-## Showcase
-
 ![Showcase 1](./docs/images/showcase_1.png)
 ![Showcase 2](./docs/images/showcase_2.png)
 ![Showcase 3](./docs/images/showcase_3.png)
+
+<div align=center>
+Trained model in work.
+</div>
+
+# mnist-handwritten-digit-recognizer
+
+DIY neural network for digit recognition
 
 ## Features
 
