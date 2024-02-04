@@ -151,3 +151,7 @@ python dump_dataset.py mnist_images
 ```
 
 It will create `mnist_images_pngs` directory. It will contain PNG files with the following name format: `{image index}_{image class}.png`.
+
+## License
+
+Licensed under [GNU GPLv3](COPYING) only.
